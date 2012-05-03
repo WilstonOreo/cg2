@@ -1,0 +1,68 @@
+
+namespace cg2 
+{
+bool Triangle::intersect(Ray &ray)
+{
+	int k  = kuv & 3, ku = (kuv >> 2) & 3, kv = (kuv >> 4) & 3;
+
+	float t = (n_d - ray.org[k] - n_u * ray.org[ku] - n_v * ray.org[kv]) /
+		(ray.dir[k] + n_u * ray.dir[ku] + n_v * ray.dir[kv]);
+
+	if (t <= ray.tmin || t >= ray.tmax) return false;
+	float hu = ray.org.cell[ku] + t * ray.dir.cell[ku] - au;
+	float hv = ray.org.cell[kv] + t * ray.dir.cell[kv] - av;
+
+	float u = hv * b_nu + hu * b_nv; 
+	float v = hu * c_nu + hv * c_nv; 
+
+	if (v < 0 || (u+v > 1.0)) return false; 
+	if (u < 0) return false;
+	
+	ray.t(t);
+	ray.texCoord(u,v);
+	ray.normal = getNormal(ray);
+	ray.obj = this;
+	return true;
+}
+
+void Triangle::build(Vertex* _v0, Vertex* _v1, Vertex* _v2)
+{
+	v0 = _v0; v1 = _v1; v2 = _v2;
+	vec3f c = v1->v - v0->v;
+	vec3f b = v2->v - v0->v;
+	vec3f n = c.cross(b).normalized();
+	int k = 2;
+	vec3f nAbs(fabs(n.x),fabs(n.y),fabs(n.z));
+
+	if (nAbs.x > nAbs.y)
+	{ 	if (nAbs.x > nAbs.z) k = 0;
+	} else
+		if (nAbs.y > nAbs.z) k = 1;
+
+	int u = (k+1) % 3, v = (k+2) % 3;
+	kuv = k | (u << 2) | (v << 4);
+
+	au = v0->v.cell[u]; av = v0->v.cell[v];
+
+	n_u = n[u] / n[k];
+	n_v = n[v] / n[k];
+	n_d = (v0->v * n) / n[k];
+
+	float reci = b[u]*c[v] - b[v]*c[u];
+	b_nu =  b[u] / reci;
+	b_nv = -b[v] / reci;
+	c_nu =  c[v] / reci;
+	c_nv = -c[u] / reci;
+}
+
+int Triangle::splitPlaneIntersect(float splitPos, int axis)
+{
+	float minPos = min(v0->v.cell[axis],min(v1->v.cell[axis],v2->v.cell[axis]));
+	float maxPos = max(v0->v.cell[axis],max(v1->v.cell[axis],v2->v.cell[axis]));
+
+	if (maxPos < splitPos) return 1;
+	if (minPos > splitPos) return 2; 
+	return 3;
+}
+
+}
