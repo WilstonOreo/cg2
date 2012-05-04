@@ -1,39 +1,39 @@
 #include <cmath>
 
-#include "scene.hpp"
+#include <boost/foreach.hpp>
+
+#include "cg2/Scene.hpp"
 
 namespace cg2
 {
-  vec3f Scene::traceRay(Ray& ray, Object* curObj)
+  Vec3f Scene::traceRay(Ray& ray, IntersectableObject* curObj)
   {
     vector<Object*>::iterator objIt;
-    for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
+
+    BOOST_FOREACH( Object* obj, objects )
     {
-      if (*objIt == curObj) continue; 
-      (*objIt)->intersect(ray);
+      if (obj == curObj || obj->type() != OBJ_INTERSECT ) continue;
+      ((IntersectableObject*)obj)->intersect(ray);
     }
 
-    vec3f color;
+    Vec3f color;
     if (ray.obj && ray.obj != curObj)
     {
-      vec3f iPoint = ray.getIntersectionPoint();
-      if (ray.obj->shader)
-        color = ray.obj->shader->shade(ray);
+      if (ray.obj->shader())
+        color = ray.obj->shader()->shade(ray);
       else
-        color = vec3f(1.0,1.0,1.0);
+        color = Vec3f(1.0,1.0,1.0);
     }
     return color;
   }
 
 
-  bool Scene::traceShadowRay(Ray& shadowRay, Object* curObj)
+  bool Scene::traceShadowRay(Ray& shadowRay, IntersectableObject* curObj)
   {
-    vector<Object*>::iterator objIt;
-
-    for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
+    BOOST_FOREACH( Object* obj, objects )
     {
-      if (*objIt == curObj) continue;
-      (*objIt)->intersect(shadowRay);
+      if (obj == curObj) continue;
+      ((IntersectableObject*)obj)->intersect(shadowRay);
       if (shadowRay.obj) return true;
     }
     return false;
@@ -47,7 +47,7 @@ namespace cg2
 
   void Scene::castRays(vector<Ray>& rays, Image& outImage)
   {
-    FrameBuffer frameBuffer(outImage._w,outImage._h);
+    FrameBuffer frameBuffer(outImage.width(),outImage.height());
     vector<Ray>::iterator rayIt;
     for (rayIt = rays.begin(); rayIt != rays.end(); ++rayIt)
       frameBuffer.set(rayIt->scrPosX,rayIt->scrPosY,traceRay(*rayIt));

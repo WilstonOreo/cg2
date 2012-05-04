@@ -1,37 +1,23 @@
+#include "cg2/Object.hpp"
 
-struct Sphere : public Object
+namespace cg2 
 {
-    vec3f _c;
-    float _r;
-
-    Sphere(const vec3f& center, float radius)
-     : _c(center), _r(radius)
-    {
-    }
-
-	bool intersect(Ray& ray);
-	
-	vec3f getNormal(const vec3f& iPoint)
+	struct Sphere : public IntersectableObject
 	{
-		vec3f n = iPoint - _c;
-		return n.normalized();
-	}
+		Sphere(const Point3f& _center, float _radius)
+			: center_(_center), radius_(_radius)
+		{
+		}
 
-	pair<float,float> getTexCoords(const vec3f& iPoint)
-	{
-		// from http://www.cse.msu.edu/~cse872/tutorial4.html
-		vec3f n = getNormal(iPoint);
-		float u = atan2(n.x,n.z) / (2.0*M_PI) + 0.5;
-		float v = acosf(n.y)/M_PI;
-	
-		pair<float,float> texCoord;
-		texCoord.first = u;
-		texCoord.second = v;
-		return texCoord;
-	}
+		bool intersect(Ray& ray);
 
+		Vec3f normal(const Point3f& iPoint);
+		TexCoords texCoords(const Point3f& iPoint);
+		
+        void draw();
 
-    void draw();
-};
+        TBD_DECLARE_PROPERTY_REF(Point3f,center);
+        TBD_DECLARE_PROPERTY(float,radius);
+	};
 
-
+}

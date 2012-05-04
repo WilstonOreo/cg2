@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT(cg2ss12)
 
-INCLUDE_DIRECTORIES(./include)
+INCLUDE_DIRECTORIES(./include ./TbdLib/include)
 
 AUX_SOURCE_DIRECTORY(./src/lib cg2_src)
 

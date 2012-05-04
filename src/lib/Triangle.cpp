@@ -1,3 +1,4 @@
+#include "cg2/Triangle.hpp"
 
 namespace cg2 
 {
