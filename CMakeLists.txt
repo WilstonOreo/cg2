@@ -17,7 +17,9 @@ TARGET_LINK_LIBRARIES(cg2ex1 cg2)
 ADD_EXECUTABLE(mediantest ./src/test/mediantest.cpp)
 TARGET_LINK_LIBRARIES(mediantest boost_program_options cg2)
 
+ADD_EXECUTABLE(pointCloudTest ./src/test/pointCloudTest.cpp)
+TARGET_LINK_LIBRARIES(pointCloudTest boost_program_options cg2)
 
 #ADD_DEFINITIONS(-g -O2 -fsigned-char -freg-struct-return -Wall -W -Wshadow -Wpointer-arith -Wcast-qual -Winline)
-ADD_DEFINITIONS(-g -O3 -fsigned-char -fopenmp -freg-struct-return -Wall -fPIC)
+ADD_DEFINITIONS(-g -O1 -fsigned-char -fopenmp -freg-struct-return -Wall -fPIC)
 

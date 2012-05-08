@@ -3,10 +3,12 @@
 #include "cg2/Vector.hpp"
 
 #include <vector>
+#include <set>
 
 namespace cg2 
 {
   using std::vector;
+  using std::set;
 
   struct Vertex
   {
@@ -20,6 +22,7 @@ namespace cg2
 
   typedef vector<Vertex> Vertices;
   typedef vector<Vertex*> VertexList;
+  typedef std::set<Vertex*> VertexSet;
 
   struct Polygon : public VertexList
   {

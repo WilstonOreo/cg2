@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Primitive.hpp"
 
 namespace cg2 
