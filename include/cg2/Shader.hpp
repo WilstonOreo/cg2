@@ -1,5 +1,4 @@
-#ifndef _SHADER_HPP
-#define _SHADER_HPP
+#pragma once
 
 #include "cg2/Ray.hpp"
 #include "cg2/Image.hpp"
@@ -84,4 +83,4 @@ namespace cg2
   };
 }
 
-#endif /* _SHADER_HPP */ 
+

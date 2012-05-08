@@ -1,5 +1,4 @@
-#ifndef _VEC_HPP
-#define _VEC_HPP
+#pragma once
 
 #include <iostream>
 #include <cmath>
@@ -103,8 +102,9 @@ namespace cg2
     TexCoords(float _u = 0.0, float _v = 0.0) : u(_u), v(_v) {}
     float u,v;
   };
+
+  typedef enum { X,Y,Z } Axis;
+
+  typedef Vec3f Color;
 }
 
-
-
-#endif

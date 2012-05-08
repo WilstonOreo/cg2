@@ -1,8 +1,8 @@
-#include "cg2/Object.hpp"
+#include "cg2/SceneObject.hpp"
 
 namespace cg2 
 {
-	struct Sphere : public IntersectableObject
+	struct Sphere : public SceneObject 
 	{
 		Sphere(const Point3f& _center, float _radius)
 			: center_(_center), radius_(_radius)

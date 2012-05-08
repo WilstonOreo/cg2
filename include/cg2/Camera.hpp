@@ -1,8 +1,9 @@
+#pragma once 
+
 #include "cg2/Ray.hpp"
 
 namespace cg2 
 {
-
 	struct Camera
 	{
 		Camera() {};
@@ -16,7 +17,7 @@ namespace cg2
 		}
 
 		Ray generateRay(float x, float y);
-		vector<Ray> generatePrimaryRays(int scrWidth, int scrHeight);
+    Rays generatePrimaryRays(int scrWidth, int scrHeight);
 
 		Matrix4f m;
 		//float znear,zfar;

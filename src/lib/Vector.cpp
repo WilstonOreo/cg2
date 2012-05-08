@@ -1,8 +1,10 @@
 #include "cg2/Vector.hpp"
 
+using namespace std; 
+
 namespace cg2
 {
-  Matrix4f::print()
+  void Matrix4f::print()
   {
         for (int i = 0; i < 4; i++)
         {

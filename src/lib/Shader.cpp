@@ -127,7 +127,7 @@ namespace cg2
           shadowRay.tmin = 0.01;
           shadowRay.tmax = 0.99;
 
-          if (scene->traceShadowRay(shadowRay,ray.obj))
+          if (scene->traceShadowRay(shadowRay,(SceneObject*)ray.obj))
             diff *=  (1.0 - light->shadows()*(1.0-refract)*(1.0-reflect));
         }	
 
@@ -142,12 +142,12 @@ namespace cg2
       if (reflect > 0.0f)
       {
         Ray rayRefl = ray.reflect();
-        color += color*(1.0f - reflect) + scene->traceRay(rayRefl,ray.obj) * reflect;
+        color += color*(1.0f - reflect) + scene->traceRay(rayRefl,(SceneObject*)ray.obj) * reflect;
       }
       if (refract > 0.0f)
       {
         Ray rayRefr = ray.refract(IOR);
-        color += color*(1.0f - refract) + scene->traceRay(rayRefr,ray.obj) * refract;
+        color += color*(1.0f - refract) + scene->traceRay(rayRefr,(SceneObject*)ray.obj) * refract;
       }
     }
 

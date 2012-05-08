@@ -1,12 +1,15 @@
+#pragma once
 
-class PointCloud : public Mesh, public vector<point3f>
+#include "cg2/Vertex.hpp"
+
+namespace cg2
 {
-	void readOff(string filename);
-	void buildKDTree();
-	void draw(color3f Color = color3f());
+  class PointCloud : public Mesh
+  {
+    void read(string filename);
+    void buildKDTree();
+    void draw(color3f Color = color3f());
 
-	void divideNode(KDNode* node, BoundingBox& box, int depth);
-	vector<Vertex> vertices;
-	BoundingBox box;
-};
-
+    void divideNode(KDNode* node, BoundingBox& box, int depth);
+  };
+}

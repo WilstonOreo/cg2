@@ -1,4 +1,8 @@
+#pragma once 
+
 #include "cg2/Vector.hpp"
+
+#include <vector>
 
 namespace cg2
 {
@@ -12,5 +16,8 @@ namespace cg2
     TBD_DECLARE_PROPERTY(float,shadows);
     TBD_DECLARE_PROPERTY(float,radius);
   };
+
+  typedef std::vector<Light*> LightList;
+  typedef std::vector<Light> Lights;
 }
 

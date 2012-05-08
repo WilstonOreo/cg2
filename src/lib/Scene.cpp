@@ -6,8 +6,9 @@
 
 namespace cg2
 {
-  Vec3f Scene::traceRay(Ray& ray, IntersectableObject* curObj)
+  Vec3f Scene::traceRay(Ray& ray, SceneObject* curObj)
   {
+/*
     vector<Object*>::iterator objIt;
 
     BOOST_FOREACH( Object* obj, objects )
@@ -15,44 +16,38 @@ namespace cg2
       if (obj == curObj || obj->type() != OBJ_INTERSECT ) continue;
       ((IntersectableObject*)obj)->intersect(ray);
     }
-
     Vec3f color;
     if (ray.obj && ray.obj != curObj)
     {
-      if (ray.obj->shader())
-        color = ray.obj->shader()->shade(ray);
-      else
-        color = Vec3f(1.0,1.0,1.0);
+      color = Vec3f(1.0,1.0,1.0);  
+      if (ray.obj->type() == OBJ_SHADABLE)
+        if (((ShadableObject*)ray.obj)->shader())
+          color = ((ShadableObject*)ray.obj)->shader()->shade(ray);
     }
-    return color;
+    return color;*/
+    return Vec3f();
   }
 
 
-  bool Scene::traceShadowRay(Ray& shadowRay, IntersectableObject* curObj)
+  bool Scene::traceShadowRay(Ray& shadowRay, SceneObject* curObj)
   {
-    BOOST_FOREACH( Object* obj, objects )
+    BOOST_FOREACH( SceneObject* obj, objects )
     {
       if (obj == curObj) continue;
-      ((IntersectableObject*)obj)->intersect(shadowRay);
+      obj->intersect(shadowRay);
       if (shadowRay.obj) return true;
     }
     return false;
   }
-  void Scene::castRays(vector<Ray>& rays)
+  void Scene::castRays(Rays& rays, Image* outImage)
   {
-    vector<Ray>::iterator rayIt;
-    for (rayIt = rays.begin(); rayIt != rays.end(); ++rayIt)
-      frameBuf.set(rayIt->scrPosX,rayIt->scrPosY,traceRay(*rayIt));
-  }
+    if (outImage) frameBuffer.resize(outImage->width(),outImage->height());
 
-  void Scene::castRays(vector<Ray>& rays, Image& outImage)
-  {
-    FrameBuffer frameBuffer(outImage.width(),outImage.height());
-    vector<Ray>::iterator rayIt;
-    for (rayIt = rays.begin(); rayIt != rays.end(); ++rayIt)
-      frameBuffer.set(rayIt->scrPosX,rayIt->scrPosY,traceRay(*rayIt));
-    frameBuffer.drawToImage(outImage);
-  }
+    BOOST_FOREACH( Ray& ray, rays)
+      frameBuffer.set(ray.scrPosX,ray.scrPosY,traceRay(ray));
 
+    if (outImage) frameBuffer.drawToImage(*outImage);
+
+  }
 }
 

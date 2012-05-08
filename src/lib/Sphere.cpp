@@ -1,5 +1,6 @@
 #include "cg2/Sphere.hpp"
 
+
 #include <GL/glut.h>
 
 namespace cg2 

@@ -1,5 +1,4 @@
-#ifndef _IMAGE_HPP
-#define _IMAGE_HPP
+#pragma once
 
 #include "cg2/Vector.hpp"
 #include "cg2/misc.hpp"
@@ -65,4 +64,4 @@ namespace cg2
     TBD_DECLARE_PROPERTY_REF(vector<Color>,data);
   };
 }
-#endif
+

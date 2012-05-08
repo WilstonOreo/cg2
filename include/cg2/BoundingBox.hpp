@@ -1,37 +1,26 @@
-#include "Object.hpp"
+#include "Primitive.hpp"
 
 namespace cg2 
 {
-  struct BoundingBox : public IntersectableObject
+  struct BoundingBox : public Primitive
   {
-    void intersect(Ray& ray, float& tnear, float& tfar);
-    void set(const vec3f& _min, const vec3f& _max) { min = _min; max = _max; }
+    bool intersect(Ray& ray);
+    void set(const Point3f& _min, const Point3f& _max) { min = _min; max = _max; }
     void draw(Color color = Color());
 
-    int dominantAxis() 
-    {
-      vec3f d = min - max; d.set(abs(d.x),abs(d.y),abs(d.z));
-      if (d.x > d.y)
-      { 	if (d.x > d.z) return 0;
-      } else
-        if (d.y > d.z) return 1;
-      return 2;
-    }
+    void split(float splitPos, Axis axis, BoundingBox& boxLeft, BoundingBox& boxRight);
 
-    float split(float splitPos, int axis, BoundingBox& boxLeft, BoundingBox& boxRight)
-    {
-      for (int i = 0; i < 3; i++)
-        if (min.cell[i] > max.cell[i]) swap(min.cell[i],max.cell[i]);
+    Vec3f normal(const Ray& ray) { return Vec3f(); }
+    TexCoords texCoords(const Ray& ray) { return TexCoords(); }
 
-      boxLeft.set(min,max);
-      boxRight.set(min,max);
-      boxLeft.max.cell[axis] = splitPos;
-      boxRight.min.cell[axis] = splitPos;
-    }
+    Axis dominantAxis();
+
+    bool pointInBox(Point3f p);
+
+
+    Vec3f size() { return max-min; }
 
     // Bounding box points
-    point3f min, max;
+    Point3f min, max;
   };
-
-
 }

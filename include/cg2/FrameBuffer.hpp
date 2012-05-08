@@ -1,3 +1,4 @@
+#pragma once
 #include "cg2/Image.hpp"
 
 #include <vector>

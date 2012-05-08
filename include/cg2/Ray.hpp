@@ -1,11 +1,11 @@
-#ifndef RAYCAST_HPP
-#define RAYCAST_HPP
-
+#pragma once 
 #include "cg2/Vector.hpp"
+
+#include <vector>
 
 namespace cg2
 {
-  class IntersectableObject;
+  class Primitive;
 
   struct Ray
   {
@@ -51,13 +51,18 @@ namespace cg2
     Vec3f dir;
     float tmin, tmax;
     Vec3f normal,color;
-    IntersectableObject* obj;
+    Primitive* obj;
     unsigned bounce;
 
     float u,v;
 
     float scrPosX, scrPosY;
   };
+
+  typedef enum { DIR_TOP, DIR_BOTTOM, DIR_LEFT, DIR_RIGHT, DIR_FRONT, DIR_BACK } Direction;
+
+  typedef std::vector<Ray*> RayList;
+  typedef std::vector<Ray> Rays;
+
 }
 
-#endif
