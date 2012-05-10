@@ -28,12 +28,14 @@ namespace cg2
       is.getline(buf,65536);
       string row(buf);
       boost::trim(row);
+      if (row.empty())
+        continue;
 
       vector<string> tokens;
       boost::split(tokens, row, boost::is_any_of("\t ") );
 
       switch(mode)
-      {		
+      {
         case HEADER:
           if (row=="OFF") { mode++; nRow++; }
           break;
