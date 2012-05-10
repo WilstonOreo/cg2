@@ -3,7 +3,7 @@
 #include "glwidget.h"
 
 #include "helper.h"
-#include <GL/glu.h>
+#include <GL/gl.h>
 
 LOG_INIT;
 
@@ -15,10 +15,6 @@ GLWidget::GLWidget(QWidget *parent) :
   old_y = 0;
   lbutton = false;
   angle = 0.0;
-  pointSize = 2.0;
-  kNearest = 10;
-  radius = 2.0;
-  selectionMode = SELECT_RADIUS;
 }
 
 void GLWidget::initializeGL()
@@ -47,16 +43,6 @@ void GLWidget::initializeGL()
     
 }
 
-void GLWidget::update()
-{
-  if (selectionMode == SELECT_RADIUS) 
-    pointCloud.collectInRadius(selection,radius); else
-  if (selectionMode == SELECT_KNEAREST)
-    pointCloud.collectKNearest(selection,kNearest);
-  
-  paintGL();
-}
-
 void GLWidget::resizeGL(int w, int h)
 {
 
@@ -78,7 +64,7 @@ void GLWidget::resizeGL(int w, int h)
 	GLdouble centerZ= 0;
   // set camera parameters
   GLdouble eyeX=pointCloud.boundingBox().size().length()*cos(angle/100.0);
-	GLdouble eyeY=pointCloud.boundingBox().size().y*1.5;
+	GLdouble eyeY=2;
 	GLdouble eyeZ=pointCloud.boundingBox().size().length()*sin(angle/100.0); 
 	GLdouble upX=0;
 	GLdouble upY=1;
@@ -90,48 +76,37 @@ void GLWidget::resizeGL(int w, int h)
 	glClearColor(0.0,0.0,0.0,1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
 	glMatrixMode(GL_MODELVIEW);
-
-}
-
-Point3f unProject(QPoint const & pos)
-{
-    GLdouble projection[16];
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-    GLdouble modelView[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    double winX = pos.x();
-    double winY = viewport[3] - pos.y();
-
-    GLfloat winZ;
-    glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
-
-    Point3f obj;
-    gluUnProject(winX, winY, winZ, modelView, projection, viewport, &obj.x, &obj.y, &obj.z);
-    return obj;
+/*
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    //glOrtho(-w/2.0, w/2.0, h/2.0, -h/2.0, -1, 1);
+    glFrustum(-w/2.0, w/2.0, h/2.0, -h/2.0, 0, 100);
+  */  
+ /*   double mTransposed[] = {
+         2,  1, 1, 0,
+         0, -2, 2, 0,
+        -2,  1, 1, 0,
+         0,  0, 0, 1
+    };*/
+    //glMultMatrixd(mTransposed);
+    //glMultTransposeMatrixd(m[0]);
 }
 
 void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //boxhelper(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, QBrush(QColor(192, 192, 192)));
 
-    glPointSize(pointSize);
+  //  glRotate3f
+    glPointSize(2.0);
+
     glLoadIdentity();
   
     cg2::Vec3f c = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
-    glTranslatef(-c.x,-c.y,-c.z);
-    pointCloud.draw(cg2::Color(0.8,0.5,0.0));
-
-    glPointSize(pointSize*4.0);
-    glBegin(GL_POINTS);
-    glColor3f(1.0,0.0,0.0);
-    glVertex3f(selection.x,selection.y,selection.z);
-    glEnd();
+    glTranslatef(c.x,c.y,c.z);
+    pointCloud.draw(cg2::Color(1.0,1.0,0.0));
 
     swapBuffers();
 }
@@ -162,8 +137,6 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
   {
     old_x = event->x(); old_y = event->y();
     lbutton = !lbutton;
-    selection = unProject(event->pos());
-    update();
  }
 }
 
