@@ -63,52 +63,55 @@ namespace cg2
     float x  = min.x, y  = min.y, z  = min.z;
     float xs = max.x, ys = max.y, zs = max.z;
 
+
+    glColor3f(color.x,color.y,color.z);
+
     glBegin(GL_LINE_LOOP);
     // top side
-    glVertex3f(x     , y + ys, z     );
-    glVertex3f(x + xs, y + ys, z     );
-    glVertex3f(x + xs, y + ys, z + zs);
-    glVertex3f(x     , y + ys, z + zs);
+    glVertex3f(x , ys, z );
+    glVertex3f(xs, ys, z );
+    glVertex3f(xs, ys, zs);
+    glVertex3f(x , ys, zs);
     glEnd();
 
     glBegin(GL_LINE_LOOP);
     // bottom side
-    glVertex3f(x     , y     , z     );
-    glVertex3f(x + xs, y     , z     );
-    glVertex3f(x + xs, y     , z + zs);
-    glVertex3f(x     , y     , z + zs);
+    glVertex3f(x , y, z );
+    glVertex3f(xs, y, z );
+    glVertex3f(xs, y, zs);
+    glVertex3f(x , y, zs);
     glEnd();
 
     glBegin(GL_LINE_LOOP);
     // east side
-    glVertex3f(x     , y     , z     );
-    glVertex3f(x + xs, y     , z     );
-    glVertex3f(x + xs, y + ys, z     );
-    glVertex3f(x     , y + ys, z     );
+    glVertex3f(x , y , z);
+    glVertex3f(xs, y , z);
+    glVertex3f(xs, ys, z);
+    glVertex3f(x , ys, z);
     glEnd();
 
     glBegin(GL_LINE_LOOP);
     // west side
-    glVertex3f(x     , y     , z + zs);
-    glVertex3f(x + xs, y     , z + zs);
-    glVertex3f(x + xs, y + ys, z + zs);
-    glVertex3f(x     , y + ys, z + zs);
+    glVertex3f(x , y ,zs);
+    glVertex3f(xs, y ,zs);
+    glVertex3f(xs, ys,zs);
+    glVertex3f(x , ys,zs);
     glEnd();
 
     glBegin(GL_LINE_LOOP);
     // north side
     glVertex3f(x     , y     , z     );
-    glVertex3f(x     , y     , z + zs);
-    glVertex3f(x     , y + ys, z + zs);
-    glVertex3f(x     , y + ys, z     );
+    glVertex3f(x     , y     , zs);
+    glVertex3f(x     , ys, zs);
+    glVertex3f(x     , ys, z     );
     glEnd();
 
     glBegin(GL_LINE_LOOP);
     // south side
-    glVertex3f(x + xs, y     , z     );
-    glVertex3f(x + xs, y     , z + zs);
-    glVertex3f(x + xs, y + ys, z + zs);
-    glVertex3f(x + xs, y + ys, z     );
+    glVertex3f( xs, y     , z     );
+    glVertex3f( xs, y     , zs);
+    glVertex3f( xs, ys, zs);
+    glVertex3f( xs, ys, z     );
     glEnd();    
   }
 

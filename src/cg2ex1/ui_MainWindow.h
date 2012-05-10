@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Tue May 8 22:16:44 2012
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Wed May 9 13:24:06 2012
+**      by: Qt User Interface Compiler version 4.7.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -24,64 +24,52 @@
 #include <QtGui/QRadioButton>
 #include <QtGui/QSpinBox>
 #include <QtGui/QWidget>
+#include <QtGui/QDockWidget>
+
+#include "glwidget.h"
+
+#include <iostream>
 
 QT_BEGIN_NAMESPACE
 
 class Ui_MainWindow
 {
 public:
-    QWidget *centralwidget;
-    QGridLayout *gridLayout;
-    QWidget *widget;
-    QGroupBox *grpSelectionMethod;
+    GLWidget *glWidget;
+    QDockWidget *grpSelectionMethod;
+    QDockWidget *grpRenderSettings;
     QRadioButton *btnInRadius;
     QRadioButton *btnKNearest;
     QSpinBox *spinBox;
+    QSpinBox *boxVertexId;
     QDoubleSpinBox *doubleSpinBox;
-    QGroupBox *grpRenderSettings;
     QCheckBox *boxRenderKDTree;
     QDoubleSpinBox *doubleSpinBox_3;
     QLabel *label;
+    QLabel *lbVertexId;
 
     void setupUi(QMainWindow *MainWindow)
     {
+        glWidget = new GLWidget(MainWindow);
+        glWidget->resize(950,670);
+        glWidget->setMouseTracking(true);
+
+        MainWindow->setCentralWidget(glWidget);
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(1097, 886);
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        sizePolicy.setHorizontalStretch(0);
-        sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
-        MainWindow->setSizePolicy(sizePolicy);
+        MainWindow->resize(950, 670);
+        
         MainWindow->setFocusPolicy(Qt::NoFocus);
         MainWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
-        MainWindow->setAutoFillBackground(false);
-        MainWindow->setTabShape(QTabWidget::Rounded);
-        centralwidget = new QWidget(MainWindow);
-        centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
-        gridLayout = new QGridLayout(centralwidget);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        widget = new QWidget(centralwidget);
-        widget->setObjectName(QString::fromUtf8("widget"));
-        QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Preferred);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(widget->sizePolicy().hasHeightForWidth());
-        widget->setSizePolicy(sizePolicy1);
+        MainWindow->setAutoFillBackground(true);
 
-        gridLayout->addWidget(widget, 0, 0, 2, 1);
 
-        grpSelectionMethod = new QGroupBox(centralwidget);
-        grpSelectionMethod->setObjectName(QString::fromUtf8("grpSelectionMethod"));
-        QSizePolicy sizePolicy2(QSizePolicy::Fixed, QSizePolicy::Preferred);
-        sizePolicy2.setHorizontalStretch(0);
-        sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(grpSelectionMethod->sizePolicy().hasHeightForWidth());
-        grpSelectionMethod->setSizePolicy(sizePolicy2);
-        grpSelectionMethod->setMinimumSize(QSize(300, 0));
-        grpSelectionMethod->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
-        grpSelectionMethod->setFlat(false);
-        grpSelectionMethod->setCheckable(false);
+
+        grpSelectionMethod = new QDockWidget(MainWindow);
+        grpRenderSettings = new QDockWidget(MainWindow);
+        MainWindow->addDockWidget(Qt::RightDockWidgetArea,grpSelectionMethod);
+        MainWindow->addDockWidget(Qt::RightDockWidgetArea,grpRenderSettings);
+            
         btnInRadius = new QRadioButton(grpSelectionMethod);
         btnInRadius->setObjectName(QString::fromUtf8("btnInRadius"));
         btnInRadius->setGeometry(QRect(20, 30, 116, 22));
@@ -98,19 +86,17 @@ public:
         doubleSpinBox->setObjectName(QString::fromUtf8("doubleSpinBox"));
         doubleSpinBox->setGeometry(QRect(140, 30, 91, 27));
         doubleSpinBox->setValue(2);
+        doubleSpinBox->setSingleStep(0.05);
 
-        gridLayout->addWidget(grpSelectionMethod, 0, 1, 1, 1);
+        boxVertexId = new QSpinBox(grpSelectionMethod);
+        boxVertexId->setObjectName(QString::fromUtf8("boxVertexId"));
+        boxVertexId->setGeometry(QRect(140, 90, 91, 27));
+        boxVertexId->setValue(200);
+        boxVertexId->setRange(0,10000);
+        lbVertexId = new QLabel(grpSelectionMethod);
+        lbVertexId->setObjectName(QString::fromUtf8("lbVertexId"));
+        lbVertexId->setGeometry(QRect(20, 90, 66, 17));
 
-        grpRenderSettings = new QGroupBox(centralwidget);
-        grpRenderSettings->setObjectName(QString::fromUtf8("grpRenderSettings"));
-        QSizePolicy sizePolicy3(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        sizePolicy3.setHorizontalStretch(0);
-        sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(grpRenderSettings->sizePolicy().hasHeightForWidth());
-        grpRenderSettings->setSizePolicy(sizePolicy3);
-        grpRenderSettings->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
-        grpRenderSettings->setFlat(false);
-        grpRenderSettings->setCheckable(false);
         boxRenderKDTree = new QCheckBox(grpRenderSettings);
         boxRenderKDTree->setObjectName(QString::fromUtf8("boxRenderKDTree"));
         boxRenderKDTree->setGeometry(QRect(10, 30, 191, 22));
@@ -118,33 +104,32 @@ public:
         doubleSpinBox_3->setObjectName(QString::fromUtf8("doubleSpinBox_3"));
         doubleSpinBox_3->setGeometry(QRect(140, 60, 91, 27));
         doubleSpinBox_3->setValue(2);
+        doubleSpinBox_3->setSingleStep(0.2);
+
         label = new QLabel(grpRenderSettings);
         label->setObjectName(QString::fromUtf8("label"));
         label->setGeometry(QRect(30, 60, 66, 17));
         boxRenderKDTree->raise();
         doubleSpinBox_3->raise();
         label->raise();
-        widget->raise();
-
-        gridLayout->addWidget(grpRenderSettings, 1, 1, 1, 1);
-
-        MainWindow->setCentralWidget(centralwidget);
-
         retranslateUi(MainWindow);
 
         QMetaObject::connectSlotsByName(MainWindow);
+   
     } // setupUi
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
-        grpSelectionMethod->setTitle(QApplication::translate("MainWindow", "Selection method", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "CG2 Projekt von Bjoern, Elmar und Michael", 0, QApplication::UnicodeUTF8));
+        grpSelectionMethod->setWindowTitle(QApplication::translate("MainWindow", "Selection method", 0, QApplication::UnicodeUTF8));
         btnInRadius->setText(QApplication::translate("MainWindow", "In Radius:", 0, QApplication::UnicodeUTF8));
         btnKNearest->setText(QApplication::translate("MainWindow", "k Nearest:", 0, QApplication::UnicodeUTF8));
-        grpRenderSettings->setTitle(QApplication::translate("MainWindow", "Render settings", 0, QApplication::UnicodeUTF8));
+        grpRenderSettings->setWindowTitle(QApplication::translate("MainWindow", "Render settings", 0, QApplication::UnicodeUTF8));
         boxRenderKDTree->setText(QApplication::translate("MainWindow", "Render KDTree", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("MainWindow", "Point size:", 0, QApplication::UnicodeUTF8));
-    } // retranslateUi
+        lbVertexId->setText(QApplication::translate("MainWindow", "Vertex Id:", 0, QApplication::UnicodeUTF8));
+    
+      } // retranslateUi
 
 };
 

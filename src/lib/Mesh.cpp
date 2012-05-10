@@ -2,6 +2,7 @@
 
 #include <boost/foreach.hpp>
 
+#include <tbd/log.h>
 
 namespace cg2
 {

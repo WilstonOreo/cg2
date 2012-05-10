@@ -25,28 +25,36 @@ namespace cg2
   class PointSet : public std::set<SelectedPoint,PointCompare>
   {
     public:
-    PointSet(Point3f _center);
+    PointSet(Point3f _center, float _radius = 0.0, int _k = 0);
 
-    bool insert(Vertex* v,float maxDist = 0.0f, unsigned k = 0);
+    bool insert(Vertex* v);
     VertexSet vertexSet();
+    float maxDist();
 
-    TBD_DECLARE_PROPERTY(Point3f,center);
+    TBD_DECLARE_PROPERTY(int,k);
+    TBD_DECLARE_PROPERTY(float,radius);
+    TBD_DECLARE_PROPERTY_REF(Point3f,center); 
   };
 
   class PointKDTree : public KDTree<Vertex>
   {
   public:
-    void collectKNearest(Point3f& p, int k, KDNode<Vertex>* node, PointSet& pointSet);
-    void collectInRadius(Point3f& p, float radius, KDNode<Vertex>* node, PointSet& pointSet);
-    
+    PointKDTree() : drawDepth_(10) {}
+    void collect(KDNode<Vertex>* node, BoundingBox& box, PointSet& pointSet);
+
+    TBD_DECLARE_PROPERTY(unsigned,drawDepth);
   private:
     void divideNode(KDNode<Vertex>* node, BoundingBox& box, int depth);
+
+    float nodeDistance(Point3f& p, BoundingBox& box);
   };
 
 
   class PointCloud : public Mesh
   {
     public:
+      PointCloud();
+
       void read(string filename);
       void write(string filename);
 
@@ -65,6 +73,10 @@ namespace cg2
       VertexSet selection;
 
       TBD_DECLARE_PROPERTY(bool,drawKDTree);
+      TBD_DECLARE_PROPERTY_REF(Color,kdTreeColor);
+      TBD_DECLARE_PROPERTY(bool,drawBoundingBox);
+      TBD_DECLARE_PROPERTY_REF(Color,boundingBoxColor);
+
       TBD_DECLARE_PROPERTY(bool,highlightSelection);
       TBD_DECLARE_PROPERTY(Color,selectionColor);
     private:

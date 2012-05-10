@@ -34,14 +34,14 @@ namespace cg2
       right = NULL;
     }
 
-    void draw(Color color, BoundingBox& box)
+    void draw(Color color, BoundingBox& box, int depth, int maxDepth)
     {
-      if (isLeaf()) { box.draw(color); return; }
+      if (isLeaf() || depth >= maxDepth) { box.draw(color); return; }
 
       BoundingBox boxLeft, boxRight;
       box.split(splitPos,axis,boxLeft,boxRight);
-      if (left) left->draw(color,boxLeft);
-      if (right) right->draw(color,boxRight);
+      if (left) left->draw(color,boxLeft,depth+1,maxDepth);
+      if (right) right->draw(color,boxRight,depth+1,maxDepth);
     }
   };
 
@@ -61,7 +61,7 @@ namespace cg2
 
     void draw(Color color, BoundingBox& box)
     {
-      if (root) root->draw(color,box);
+      if (root) root->draw(color,box,0,12);
     }
 
     void build(vector<T>& objs, BoundingBox& boundingBox)

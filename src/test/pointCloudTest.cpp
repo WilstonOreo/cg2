@@ -50,7 +50,7 @@ int main(int ac, char* av[])
 
   cg2::PointCloud pointCloud;
   pointCloud.read(inputFile);
-/*  pointCloud.write(outputFile);
+  pointCloud.write(outputFile);
 
   cg2::Point3f p(1.0,1.0,0.0);
   pointCloud.collectKNearest(p,20);
@@ -58,7 +58,6 @@ int main(int ac, char* av[])
   BOOST_FOREACH( const cg2::Vertex* vertex, pointCloud.selection )
     LOG_MSG << fmt("(%,%,%) dist = %") % vertex->v.x % vertex->v.y % vertex->v.z % (vertex->v - p).length();
 
-*/
 
 
 
