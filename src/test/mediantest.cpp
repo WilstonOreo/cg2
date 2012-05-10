@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "Median.hpp"
+#include "cg2/Median.hpp"
 #include <algorithm>
 
 #define NUM_ELEMENTS 101
