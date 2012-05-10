@@ -1,4 +1,5 @@
 #include "tbd/log.h"
+#include "cg2/Vector.hpp"
 
 #include "glwidget.h"
 
@@ -7,6 +8,7 @@
 
 LOG_INIT;
 
+using namespace cg2;
 
 GLWidget::GLWidget(QWidget *parent) :
         QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent)
@@ -77,7 +79,7 @@ void GLWidget::resizeGL(int w, int h)
 	GLdouble centerY= 0;
 	GLdouble centerZ= 0;
   // set camera parameters
-  GLdouble eyeX=pointCloud.boundingBox().size().length()*cos(angle/100.0);
+	GLdouble eyeX=pointCloud.boundingBox().size().length()*cos(angle/100.0);
 	GLdouble eyeY=pointCloud.boundingBox().size().y*1.5;
 	GLdouble eyeZ=pointCloud.boundingBox().size().length()*sin(angle/100.0); 
 	GLdouble upX=0;
@@ -111,9 +113,9 @@ Point3f unProject(QPoint const & pos)
     GLfloat winZ;
     glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
 
-    Point3f obj;
-    gluUnProject(winX, winY, winZ, modelView, projection, viewport, &obj.x, &obj.y, &obj.z);
-    return obj;
+    GLdouble x,y,z;
+    gluUnProject(winX, winY, winZ, modelView, projection, viewport, &x, &y, &z);
+    return Point3f(x,y,z);
 }
 
 void GLWidget::paintGL()
