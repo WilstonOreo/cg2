@@ -1,4 +1,5 @@
 #include "cg2/PolygonMesh.hpp"
+#include "cg2/OFFReader.hpp"
 
 #include <boost/foreach.hpp>
 
@@ -12,6 +13,8 @@ namespace cg2
 {
   void PolygonMesh::read(string filename)
   {
+    OFFReader off;
+    off.read(filename,this,&polygons_);
     calcBoundingBox();
     calcNormals();
   }

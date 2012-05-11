@@ -50,7 +50,8 @@ namespace cg2
   {
     KDTree() : root(NULL) {}
 
-    KDNode<T>* root;
+    typedef KDNode<T> Node;
+    Node* root;
     void clear()
     {
       if (!root) return;
@@ -67,7 +68,7 @@ namespace cg2
     void build(vector<T>& objs, BoundingBox& boundingBox)
     {
       clear();
-      root = new KDNode<Vertex>();
+      root = new Node;
       root->objs.reserve(objs.size());
       
       for (unsigned i = 0; i < objs.size(); i++)
@@ -76,8 +77,9 @@ namespace cg2
       divideNode(root,boundingBox,0);
     }
 
+
   private:
-    virtual void divideNode(KDNode<T>* node, BoundingBox& boundingBox, int depth) = 0;
+    virtual void divideNode(Node* node, BoundingBox& boundingBox, int depth) = 0;
   };
 }
 

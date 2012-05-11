@@ -26,6 +26,7 @@ namespace cg2
 
   struct Polygon : public VertexList
   {
+    Polygon(int n = 3) { if (n < 3) n = 3; resize(n); } 
 	  Vec3f normal();
   };
 

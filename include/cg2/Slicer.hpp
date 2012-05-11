@@ -10,6 +10,9 @@ namespace cg2
 
   class Slicer : public ConfigurableObject
   {
+    public:
+      Slicer(Config* _config = NULL) : ConfigurableObject(_config) {}
+
 	  Slices slice(SceneObject& obj, unsigned nSlices = 0);
 
     TBD_DECLARE_PROPERTY_CFG(unsigned,nSlices,"NUMBER_OF_SLICES",10);

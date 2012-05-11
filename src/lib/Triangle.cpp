@@ -1,5 +1,7 @@
 #include "cg2/Triangle.hpp"
 
+#include "tbd/log.h"
+
 namespace cg2 
 {
   using std::min;
@@ -12,9 +14,11 @@ namespace cg2
     float t = (n_d - ray.org[k] - n_u * ray.org[ku] - n_v * ray.org[kv]) /
       (ray.dir[k] + n_u * ray.dir[ku] + n_v * ray.dir[kv]);
 
+//    LOG_MSG_(2) << fmt("% % %") % t % ray.tmin % ray.tmax; 
+
     if (t <= ray.tmin || t >= ray.tmax) return false;
-    float hu = ray.org.cell[ku] + t * ray.dir.cell[ku] - au;
-    float hv = ray.org.cell[kv] + t * ray.dir.cell[kv] - av;
+    float hu = ray.org[ku] + t * ray.dir[ku] - au;
+    float hv = ray.org[kv] + t * ray.dir[kv] - av;
 
     float u = hv * b_nu + hu * b_nv; 
     float v = hu * c_nu + hv * c_nv; 
@@ -47,13 +51,14 @@ namespace cg2
     int u = (k+1) % 3, v = (k+2) % 3;
     kuv = k | (u << 2) | (v << 4);
 
-    au = v0->v.cell[u]; av = v0->v.cell[v];
+    au = v0->v[u]; av = v0->v[v];
 
     n_u = n[u] / n[k];
     n_v = n[v] / n[k];
 
     Vec3f v_v = v0->v.vec3f();
     n_d = (v_v * n) / n[k];
+//    LOG_MSG_(2) << fmt("Built triangle n_duk % % %, k = %, nAbs (% % %)") % n_d % n_u % n_v % k % nAbs.x % nAbs.y % nAbs.z;
 
     float reci = b[u]*c[v] - b[v]*c[u];
     b_nu =  b[u] / reci;
@@ -64,8 +69,8 @@ namespace cg2
 
   int Triangle::splitPlaneIntersect(float splitPos, int axis)
   {
-    float minPos = min(v0->v.cell[axis],min(v1->v.cell[axis],v2->v.cell[axis]));
-    float maxPos = max(v0->v.cell[axis],max(v1->v.cell[axis],v2->v.cell[axis]));
+    float minPos = min(v0->v[axis],min(v1->v[axis],v2->v[axis]));
+    float maxPos = max(v0->v[axis],max(v1->v[axis],v2->v[axis]));
 
     if (maxPos < splitPos) return 1;
     if (minPos > splitPos) return 2; 

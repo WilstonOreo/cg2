@@ -27,6 +27,8 @@ TARGET_LINK_LIBRARIES(mediantest boost_program_options cg2)
 ADD_EXECUTABLE(pointCloudTest ./src/test/pointCloudTest.cpp)
 TARGET_LINK_LIBRARIES(pointCloudTest boost_program_options cg2)
 
+ADD_EXECUTABLE(MeshTest ./src/test/MeshTest.cpp)
+TARGET_LINK_LIBRARIES(MeshTest boost_program_options cg2)
 #ADD_DEFINITIONS(-g -O2 -fsigned-char -freg-struct-return -Wall -W -Wshadow -Wpointer-arith -Wcast-qual -Winline)
 
 INCLUDE(${QT_USE_FILE})

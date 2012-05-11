@@ -32,7 +32,7 @@ namespace cg2
         continue;
 
       vector<string> tokens;
-      boost::split(tokens, row, boost::is_any_of("\t ") );
+      boost::split(tokens, row, boost::is_any_of("\t "), boost::token_compress_on );
 
       switch(mode)
       {
@@ -51,7 +51,6 @@ namespace cg2
         case VERTICES: if (vertices) 
                        {
                          Vertex v; v.v.set(atof(tokens[0].c_str()),atof(tokens[1].c_str()),atof(tokens[2].c_str()));
-                         LOG_MSG_(2) << fmt("%,%,%") % v.v.x % v.v.y % v.v.z;
                          vertices->push_back(v);
                          nRow++;
                          if (nRow >= V+2) mode++;
@@ -62,9 +61,11 @@ namespace cg2
                          int n = atoi(tokens[0].c_str());
                          if (n > 0)
                          {
-                           polygons[nRow-V-2].resize(n);
+                           Polygon polygon; polygon.resize(n);
                            for (int i = 0; i < n; i++)
-                             polygons->at(nRow-V-2)[i] = &vertices->at(atoi(tokens[i+1].c_str()));
+                             polygon[i] = &vertices->at(atoi(tokens[i+1].c_str()));
+                          
+                           polygons->push_back(polygon);
                            nRow++;
                          }
                          if (nRow >= V+F+2) mode++;
@@ -75,6 +76,9 @@ namespace cg2
                        break;
       }
     }
+
+    LOG_MSG_(1) << fmt("Loaded % vertices, % polygons and % edges") % (vertices ? vertices->size() : 0) %
+                                                                      (polygons ? polygons->size() : 0) % 0;
   }
 }
 
