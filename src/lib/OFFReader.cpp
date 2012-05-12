@@ -15,8 +15,9 @@ namespace cg2
     ifstream is(filename.c_str(), ios::in);
     LOG_MSG << fmt("Reading mesh from % ...") % filename;
 
-    enum { HEADER, SIZE, VERTICES, POLYGONS, END };
-    int nRow = 0, mode = HEADER;
+    enum Mode { HEADER, SIZE, VERTICES, POLYGONS, END };
+    int nRow = 0;
+    Mode mode = HEADER;
     
     if (vertices) vertices->clear();
     if (polygons) polygons->clear();
@@ -24,9 +25,8 @@ namespace cg2
 
     while (is.good() && mode != END)
     {
-      char buf[65536];
-      is.getline(buf,65536);
-      string row(buf);
+      string row;
+      std::getline(is, row);
       boost::trim(row);
       if (row.empty())
         continue;
@@ -37,7 +37,7 @@ namespace cg2
       switch(mode)
       {
         case HEADER:
-          if (row=="OFF") { mode++; nRow++; }
+          if (row=="OFF") { mode = SIZE; nRow++; }
           break;
 
         case SIZE: 
@@ -45,7 +45,7 @@ namespace cg2
           F = atoi(tokens[1].c_str()); if (polygons) polygons->reserve(F);
           E = atoi(tokens[2].c_str());
           LOG_MSG << fmt("Found % vertices, % polygons and % edges.") % V % F % E;
-          nRow++; mode++;
+          nRow++; mode = VERTICES;
           break;
 
         case VERTICES: if (vertices) 
@@ -53,7 +53,7 @@ namespace cg2
                          Vertex v; v.v.set(atof(tokens[0].c_str()),atof(tokens[1].c_str()),atof(tokens[2].c_str()));
                          vertices->push_back(v);
                          nRow++;
-                         if (nRow >= V+2) mode++;
+                         if (nRow >= V+2) mode = POLYGONS;
                          break;
                        }
         case POLYGONS: if (polygons) 
@@ -68,9 +68,9 @@ namespace cg2
                            polygons->push_back(polygon);
                            nRow++;
                          }
-                         if (nRow >= V+F+2) mode++;
+                         if (nRow >= V+F+2) mode = END;
                          break;
-                       } else mode++;
+                       } else mode = END;
         case END:
                        LOG_MSG_(2) << "End of file reached.";
                        break;
