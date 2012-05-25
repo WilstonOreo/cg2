@@ -49,7 +49,7 @@ void MainWindow::setVertexId()
 {
   int value = boxVertexId->value();
   if (value < 0) value = 0;
-  if (value > (int)glWidget->pointCloud.size()) value = (int)glWidget->pointCloud.size();
+  if (value >= (int)glWidget->pointCloud.size()) value = (int)glWidget->pointCloud.size()-1;
 
   glWidget->selection = glWidget->pointCloud[value].v;
 
