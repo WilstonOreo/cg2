@@ -1,6 +1,6 @@
 #include "cg2/BoundingBox.hpp"
 
-#include <GL/glut.h>
+#include <GL/gl.h>
 
 using namespace std;
 

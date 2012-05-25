@@ -1,6 +1,9 @@
 #include "cg2/Plane.hpp"
 
-#include <GL/glut.h>
+#include <cmath>
+#include <GL/gl.h>
+
+using std::abs;
 
 namespace cg2 
 {

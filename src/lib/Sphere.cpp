@@ -1,7 +1,7 @@
 #include "cg2/Sphere.hpp"
 
 
-#include <GL/glut.h>
+#include <GL/gl.h>
 
 namespace cg2 
 {
@@ -9,7 +9,7 @@ namespace cg2
 	{
 		glPushMatrix();
 		glTranslatef(center_[0], center_[1], center_[2]);
-		glutSolidSphere(radius_, 32, 32);
+                //glutSolidSphere(radius_, 32, 32);
 		glPopMatrix();
 	}
 

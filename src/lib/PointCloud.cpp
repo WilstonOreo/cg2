@@ -4,7 +4,7 @@
 #include <boost/foreach.hpp>
 
 #include <cassert>
-#include <GL/glut.h>
+#include <GL/gl.h>
 
 #include "cg2/OFFReader.hpp"
 #include "cg2/OFFWriter.hpp"

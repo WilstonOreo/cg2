@@ -1,7 +1,7 @@
 #include "cg2/Ray.hpp"
 #include "cg2/Primitive.hpp"
 
-#include <GL/glut.h>
+#include <GL/gl.h>
 
 
 namespace cg2

@@ -11,7 +11,6 @@ DEPENDPATH += . \
               src/test
 INCLUDEPATH += . src/cg2ex1 include ../TbdLib/include
 
-LIBS += -lboost_program_options -lGLU -lglut
 
 QT += opengl
 
