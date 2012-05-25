@@ -15,6 +15,7 @@ public:
 
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
       typedef enum { SELECT_KNEAREST, SELECT_RADIUS } SelectionMode;
 

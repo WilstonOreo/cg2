@@ -113,6 +113,9 @@ Point3f unProject(QPoint const & pos)
     GLfloat winZ;
     glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
 
+    if (winZ >= 1.0f)
+        return Point3f(qQNaN(), qQNaN(), qQNaN());
+
     GLdouble x,y,z;
     gluUnProject(winX, winY, winZ, modelView, projection, viewport, &x, &y, &z);
     return Point3f(x,y,z);
@@ -143,18 +146,18 @@ void GLWidget::paintGL()
 // mouse motion
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-  if (event->buttons() != Qt::NoButton)
+  if (lbutton && event->buttons() != Qt::NoButton)
   {
-      angle += event->x() - old_x;
-        //int motionY = event->y() - old_y;
-      //mouseMotion(motionX, motionY);
-      //
-   resizeGL(this->width(),this->height());
-      paintGL();
+    angle += event->x() - old_x;
+    //int motionY = event->y() - old_y;
+    //mouseMotion(motionX, motionY);
+    //
+    resizeGL(this->width(),this->height());
+    paintGL();
 
-        old_x = event->x();
-        old_y = event->y();
- }
+    old_x = event->x();
+    old_y = event->y();
+  }
 }
 
 // mouse callback
@@ -162,11 +165,25 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() != Qt::NoButton)
   {
-    old_x = event->x(); old_y = event->y();
-    lbutton = !lbutton;
-    selection = unProject(event->pos());
+    cg2::Point3f newSelection = unProject(event->pos());
+    if (qIsNaN(newSelection.x)) {
+        old_x = event->x(); old_y = event->y();
+        lbutton = true;
+        cerr << "nan" << endl;
+    }
+    else {
+        cerr << "not nan" << endl;
+        selection = newSelection;
+    }
+
     update();
- }
+  }
 }
 
-
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+  if (event->button() != Qt::NoButton)
+  {
+    lbutton = false;
+  }
+}
