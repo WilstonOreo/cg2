@@ -1,3 +1,6 @@
 moc_*
 *~
 *.sw?
+/*
+!/include
+!/src
