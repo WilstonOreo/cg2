@@ -3,7 +3,6 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
 DEPENDPATH += . \
               include/cg2 \
               src/cg2ex1 \
@@ -45,16 +44,9 @@ HEADERS += include/cg2/BoundingBox.hpp \
            include/cg2/Triangle.hpp \
            include/cg2/TriangleMesh.hpp \
            include/cg2/Vector.hpp \
-           include/cg2/Vertex.hpp \
-           src/cg2ex1/glwidget.h \
-           src/cg2ex1/helper.h \
-           src/cg2ex1/MainWindow.h \
-           src/cg2ex1/ui_MainWindow.h
+		   include/cg2/Vertex.hpp
 
-SOURCES += src/cg2ex1/glwidget.cpp \
-           src/cg2ex1/main.cpp \
-           src/cg2ex1/MainWindow.cpp \
-           src/lib/BoundingBox.cpp \
+SOURCES += src/lib/BoundingBox.cpp \
            src/lib/Camera.cpp \
            src/lib/image.cpp \
            src/lib/Mesh.cpp \
@@ -70,4 +62,24 @@ SOURCES += src/cg2ex1/glwidget.cpp \
            src/lib/Sphere.cpp \
            src/lib/Triangle.cpp \
            src/lib/Vector.cpp \
-           src/lib/Vertex.cpp
+		   src/lib/Vertex.cpp
+
+cg2ex1 {
+	TARGET = cg2ex1
+	HEADERS += src/cg2ex1/glwidget.h \
+			   src/cg2ex1/helper.h \
+			   src/cg2ex1/MainWindow.h \
+			   src/cg2ex1/ui_MainWindow.h
+	SOURCES += src/cg2ex1/glwidget.cpp \
+			   src/cg2ex1/main.cpp \
+			   src/cg2ex1/MainWindow.cpp
+}
+
+cg2ex2 {
+	TARGET = cg2ex2
+	HEADERS += src/cg2ex2/MainWindow.h \
+			   src/cg2ex2/glwidget.h
+	SOURCES += src/cg2ex2/MainWindow.cpp \
+			   src/cg2ex2/main.cpp \
+			   src/cg2ex2/glwidget.cpp
+}
