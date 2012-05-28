@@ -4,33 +4,34 @@
 #include "cg2/Triangle.hpp"
 #include "cg2/KDTree.hpp"
 
-namespace cg2 
-{
-  class TriangleKDTree : public KDTree<Triangle>
-  {
-    public:
-      TriangleKDTree();
-      float recKDTreeTraverse(Ray& ray, Node* node, float tnear, float tfar, bool& found);
+namespace cg2 {
+	class TriangleKDTree : public KDTree<Triangle> {
+		public:
+			TriangleKDTree();
+			float recKDTreeTraverse(Ray & ray, Node * node, float tnear, float tfar, bool & found);
 
-    private:
-      void divideNode(Node* node, BoundingBox& box, int depth);
-  };
+		private:
+			void divideNode(Node * node, BoundingBox & box, int depth);
+	};
 
-  struct TriangleMesh : public PolygonMesh
-  {
-    void read(string filename);
+	struct TriangleMesh : public PolygonMesh {
+			void read(string filename);
 
-    bool intersect(Ray& ray);
+			bool intersect(Ray & ray);
 
-    TexCoords texCoords(const Ray& ray) { return TexCoords(); }
-    Vec3f normal(const Ray& ray) { return Vec3f(); }
+			TexCoords texCoords(const Ray & ray) {
+				return TexCoords();
+			}
+			Vec3f normal(const Ray & ray) {
+				return Vec3f();
+			}
 
-    TBD_DECLARE_PROPERTY_REF(Triangles,triangles);
-    protected:
-    void calcTriangles();
+			TBD_DECLARE_PROPERTY_REF(Triangles,triangles);
+		protected:
+			void calcTriangles();
 
-    private:
+		private:
 
-    TriangleKDTree kdTree;
-  };
+			TriangleKDTree kdTree;
+	};
 }

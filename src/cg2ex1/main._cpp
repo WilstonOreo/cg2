@@ -9,7 +9,7 @@
 #include "image.hpp"
 #include "scene.hpp"
 
-#ifdef __APPLE__ 
+#ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
@@ -24,11 +24,9 @@ int _win_gap = 8;
 
 //
 
-struct MotionInfo
-{
+struct MotionInfo {
 	MotionInfo(): eye(0,5,20), up(0,1,0), center(0,3,0),
-	znear(0.1), zfar(100.0), fovy(60), zoom(1.0)
-	{
+		znear(0.1), zfar(100.0), fovy(60), zoom(1.0) {
 
 	}
 	vec3f eye, up, center;
@@ -40,7 +38,7 @@ struct MotionInfo
 
 MotionInfo worldMotion, screenMotion;
 
-GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_10;
+GLvoid * font_style = GLUT_BITMAP_TIMES_ROMAN_10;
 
 float _light_pos[] = { -5.0, 10.0, 1.0, 0.0 };
 float _clear_col[] = {  0.5,  0.5, 0.5, 1.0 };
@@ -58,8 +56,7 @@ float timer;
 
 // window drawing ///////////////////////////////////////
 
-void main_reshape(int width,  int height)
-{
+void main_reshape(int width,  int height) {
 	glViewport(0, 0, width, height);
 
 	glMatrixMode(GL_PROJECTION);
@@ -85,16 +82,14 @@ void main_reshape(int width,  int height)
 	glutReshapeWindow(_win_w, _win_h);
 }
 
-void main_display()
-{
+void main_display() {
 	glClearColor(0.7, 0.7, 0.7, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glutSwapBuffers();
 }
 
-void world_reshape(int width, int height)
-{
+void world_reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -106,9 +101,9 @@ void world_reshape(int width, int height)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(worldMotion.eye[0], worldMotion.eye[1], worldMotion.eye[2], 
-			worldMotion.center[0], worldMotion.center[1], worldMotion.center[2], 
-			worldMotion.up[0], worldMotion.up[1], worldMotion.up[2]);
+	gluLookAt(worldMotion.eye[0], worldMotion.eye[1], worldMotion.eye[2],
+			  worldMotion.center[0], worldMotion.center[1], worldMotion.center[2],
+			  worldMotion.up[0], worldMotion.up[1], worldMotion.up[2]);
 
 	glRotatef(worldMotion.xrot, 0.f, 1.f, 0.f);
 	glRotatef(worldMotion.yrot, 1.f, 0.f, 0.f);
@@ -120,55 +115,50 @@ void world_reshape(int width, int height)
 	glEnable(GL_LIGHT0);
 }
 
-void createPrimaryRays(int w = 0, int h = 0, float samplingFactor = 1.0)
-{
+void createPrimaryRays(int w = 0, int h = 0, float samplingFactor = 1.0) {
 	int viewport[4];
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelview ); 
-	glGetDoublev(GL_PROJECTION_MATRIX, projection );
-	glGetIntegerv(GL_VIEWPORT, viewport );
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	if (w==0 || h==0)
-	{
+	if (w==0 || h==0) {
 		w = viewport[2], h = viewport[3];
 	}
 
 	_rays.resize(w*h);
 
 	double cx,cy,cz;
-	gluUnProject((viewport[2]-viewport[0])/2 , (viewport[3]-viewport[1])/2,0.0,  
-			modelview, projection, viewport, &cx,&cy,&cz);
+	gluUnProject((viewport[2]-viewport[0])/2 , (viewport[3]-viewport[1])/2,0.0,
+				 modelview, projection, viewport, &cx,&cy,&cz);
 	vec3f rayOrg(cx,cy,cz);
 
 	double rayDirTopLeft[3];
 	double rayDirTopRight[3];
 	double rayDirBottomLeft[3];
 
-	gluUnProject(0, h, 1.0, modelview, projection, viewport, 
-			&rayDirTopLeft[0],&rayDirTopLeft[1],&rayDirTopLeft[2]);
-	gluUnProject(w, h, 1.0, modelview, projection, viewport, 
-			&rayDirTopRight[0],&rayDirTopRight[1],&rayDirTopRight[2]);
-	gluUnProject(0, 0, 1.0, modelview, projection, viewport, 
-			&rayDirBottomLeft[0],&rayDirBottomLeft[1],&rayDirBottomLeft[2]);
+	gluUnProject(0, h, 1.0, modelview, projection, viewport,
+				 &rayDirTopLeft[0],&rayDirTopLeft[1],&rayDirTopLeft[2]);
+	gluUnProject(w, h, 1.0, modelview, projection, viewport,
+				 &rayDirTopRight[0],&rayDirTopRight[1],&rayDirTopRight[2]);
+	gluUnProject(0, 0, 1.0, modelview, projection, viewport,
+				 &rayDirBottomLeft[0],&rayDirBottomLeft[1],&rayDirBottomLeft[2]);
 
-	for (int i = 0; i < 3; i++)
-	{
-		rayDirTopRight[i] 	-= rayDirTopLeft[i];
+	for (int i = 0; i < 3; i++) {
+		rayDirTopRight[i]   -= rayDirTopLeft[i];
 		rayDirBottomLeft[i] -= rayDirTopLeft[i];
-		rayDirTopLeft[i] 	-= rayOrg[i];
+		rayDirTopLeft[i]    -= rayOrg[i];
 	}
 
 	float invH = 1.0f/h, invW = 1.0f/w;
-	for (int y = 0; y < h; y++)
-	{
+	for (int y = 0; y < h; y++) {
 		float diffY = float(y)*invH;
-		for (int x = 0; x < w; x++)
-		{
-			Ray* ray = &_rays[y*w+x];
+		for (int x = 0; x < w; x++) {
+			Ray * ray = &_rays[y*w+x];
 			vec3f rayDir;
 			float diffX = float(x)*invW;
 			for (int i = 0; i < 3; i++)
-				rayDir.cell[i] = rayDirTopLeft[i]+diffX*rayDirTopRight[i] 
-					+diffY*rayDirBottomLeft[i];
+				rayDir.cell[i] = rayDirTopLeft[i]+diffX*rayDirTopRight[i]
+								 +diffY*rayDirBottomLeft[i];
 			ray->init(rayOrg,rayDir,x,y);
 		}
 	}
@@ -176,18 +166,18 @@ void createPrimaryRays(int w = 0, int h = 0, float samplingFactor = 1.0)
 
 }
 
-void world_display()
-{
+void world_display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLightfv(GL_LIGHT0, GL_POSITION, _light_pos);
 
 
 	glPushMatrix();
-	for (size_t i = 0; i < _scene.objects.size(); i++)
+	for (size_t i = 0; i < _scene.objects.size(); i++) {
 		_scene.objects[i]->draw();
+	}
 
 	int viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport ); 
+	glGetIntegerv(GL_VIEWPORT, viewport);
 	int w = viewport[2], h = viewport[3];
 
 
@@ -197,11 +187,12 @@ void world_display()
 
 	glBegin(GL_POINTS);
 	for (int y = 0; y < h; y++)
-		for (int x = 0; x < w; x++)
-		{
-			if (y*w+x >= _rays.size()) break;
+		for (int x = 0; x < w; x++) {
+			if (y*w+x >= _rays.size()) {
+				break;
+			}
 
-			Ray* ray = &_rays[y*w+x];
+			Ray * ray = &_rays[y*w+x];
 			vec3f iPoint = ray->getIntersectionPoint();
 			ray->tmax = INFINITY;
 
@@ -215,8 +206,7 @@ void world_display()
 	glutSwapBuffers();
 }
 
-void screen_reshape(int width, int height)
-{
+void screen_reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -227,9 +217,9 @@ void screen_reshape(int width, int height)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(screenMotion.eye[0], screenMotion.eye[1], screenMotion.eye[2], 
-			screenMotion.center[0], screenMotion.center[1], screenMotion.center[2], 
-			screenMotion.up[0], screenMotion.up[1], screenMotion.up[2]);
+	gluLookAt(screenMotion.eye[0], screenMotion.eye[1], screenMotion.eye[2],
+			  screenMotion.center[0], screenMotion.center[1], screenMotion.center[2],
+			  screenMotion.up[0], screenMotion.up[1], screenMotion.up[2]);
 	glRotatef(screenMotion.xrot, 0.f, 1.f, 0.f);
 	glRotatef(screenMotion.yrot, 1.f, 0.f, 0.f);
 
@@ -244,21 +234,21 @@ void screen_reshape(int width, int height)
 	glEnable(GL_LIGHT0);
 }
 
-void raycast_reshape(int width, int height)
-{
-	glViewport(0, 0, width, height); 
+void raycast_reshape(int width, int height) {
+	glViewport(0, 0, width, height);
 }
 
 
-void raycast_display()
-{
+void raycast_display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glGetIntegerv(GL_VIEWPORT, viewport ); 
+	glGetIntegerv(GL_VIEWPORT, viewport);
 
 	int w = viewport[2], h = viewport[3];
-	if (_rays.size()!=w*h) return;
+	if (_rays.size()!=w*h) {
+		return;
+	}
 
-	int* pixels = (int*)malloc(w*h*sizeof(int));
+	int * pixels = (int *)malloc(w*h*sizeof(int));
 
 	Image img(w,h);
 	_scene.castRays(_rays,img);
@@ -266,10 +256,9 @@ void raycast_display()
 
 	glDrawPixels(w,h,GL_RGBA,GL_UNSIGNED_BYTE,pixels);
 
-	for (int i = 0; i < w*h; i++)
-	{
-		long r = U8(img._data[i].x); 
-		long g = U8(img._data[i].y); 
+	for (int i = 0; i < w*h; i++) {
+		long r = U8(img._data[i].x);
+		long g = U8(img._data[i].y);
 		long b = U8(img._data[i].z);
 		pixels[i] = r | (g << 8) | (b << 16);
 	}
@@ -278,15 +267,13 @@ void raycast_display()
 }
 
 
-void screen_display()
-{
+void screen_display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, _light_pos);
 
 	glPushMatrix();
-	for (size_t i = 0; i < _scene.objects.size(); i++)
-	{
+	for (size_t i = 0; i < _scene.objects.size(); i++) {
 		_scene.objects[i]->draw();
 	}
 
@@ -295,8 +282,7 @@ void screen_display()
 	glutSwapBuffers();
 }
 
-void redisplay_all()
-{
+void redisplay_all() {
 	glutSetWindow(_id_raycast);
 	raycast_reshape(_win_w,_win_h);
 	glutPostRedisplay();
@@ -313,10 +299,8 @@ void redisplay_all()
 
 // gui interaction /////////////////////////////////////
 
-void main_keyboard(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
+void main_keyboard(unsigned char key, int x, int y) {
+	switch (key) {
 		case 27:
 			exit(0);
 			break;
@@ -327,15 +311,15 @@ void main_keyboard(unsigned char key, int x, int y)
 			break;
 
 		case 'f':
-			//			_texFilter = TextureFilter((int(_texFilter) + 1) % TF_);
-			//			_checkerTexShader.tex.texFilter = _texFilter;
-			//			_earthTexShader.tex.texFilter = _texFilter;
+			//          _texFilter = TextureFilter((int(_texFilter) + 1) % TF_);
+			//          _checkerTexShader.tex.texFilter = _texFilter;
+			//          _earthTexShader.tex.texFilter = _texFilter;
 			break;
 
 		case 'm':
 			_mipMapping = !_mipMapping;
-			//			_checkerTexShader.tex.mipMapping = _mipMapping;
-			//			_earthTexShader.tex.mipMapping = _mipMapping;
+			//          _checkerTexShader.tex.mipMapping = _mipMapping;
+			//          _earthTexShader.tex.mipMapping = _mipMapping;
 
 			break;
 		case 'a':
@@ -347,15 +331,15 @@ void main_keyboard(unsigned char key, int x, int y)
 	redisplay_all();
 }
 
-void mouse(int btn, int state, int x, int y, MotionInfo& m) 
-{
+void mouse(int btn, int state, int x, int y, MotionInfo & m) {
 	if (btn == GLUT_LEFT) {
 		if (state == GLUT_UP) {
 			m.lbutton = 0;
 		}
 		if (state == GLUT_DOWN) {
 			m.lbutton = 1;
-			m.posx = x; m.posy = y;
+			m.posx = x;
+			m.posy = y;
 		}
 	}
 	if (btn == GLUT_RIGHT_BUTTON) {
@@ -370,50 +354,44 @@ void mouse(int btn, int state, int x, int y, MotionInfo& m)
 	redisplay_all();
 }
 
-void mouseMotion(int x, int y, MotionInfo& m)
-{
+void mouseMotion(int x, int y, MotionInfo & m) {
 	if (m.lbutton) {
 		//glRotatef(posx, 0.f, 1.f, 0.f);
-		m.yrot += (float) (y-m.posy);
+		m.yrot += (float)(y-m.posy);
 		m.posy = y;
-		m.xrot += (float) (x-m.posx);
+		m.xrot += (float)(x-m.posx);
 		m.posx = x;
 	}
 	if (m.rbutton) {
-		m.zoom += (float) (y-m.posy)*0.005;
+		m.zoom += (float)(y-m.posy)*0.005;
 		m.posy = y;
 	}
 	redisplay_all();
 }
 
-void screen_mouse(int btn, int state, int x, int y)
-{
+void screen_mouse(int btn, int state, int x, int y) {
 	mouse(btn,state,x,y,screenMotion);
 }
 
-void screen_mouseMotion(int x, int y)
-{
+void screen_mouseMotion(int x, int y) {
 	mouseMotion(x,y,screenMotion);
 }
 
-void world_mouse(int btn, int state, int x, int y)
-{
+void world_mouse(int btn, int state, int x, int y) {
 	mouse(btn,state,x,y,worldMotion);
 }
 
-void world_mouseMotion(int x, int y)
-{
+void world_mouseMotion(int x, int y) {
 	mouseMotion(x,y,worldMotion);
 }
 
-void update(int value)
-{
+void update(int value) {
 	float tCos = cos(timer/200.0);
 	float tSin = sin(timer/200.0);
 	float intensity = 4*cos(timer/450.0);
 
 	light1.set(vec3f(-16*tSin,16, 8*tCos),100.0,vec3f(0.5,0.5,0.5),vec3f(2.0+intensity,2.0+intensity,2.0),vec3f(1.0,1.0,1.0),0.9);
-	light2.set(vec3f( 16,16, 4),100.0,vec3f(1.0,1.0,1.0),vec3f(1.5,1.5,1.5),vec3f(1.0,1.0,1.0),0.9);
+	light2.set(vec3f(16,16, 4),100.0,vec3f(1.0,1.0,1.0),vec3f(1.5,1.5,1.5),vec3f(1.0,1.0,1.0),0.9);
 
 	timer += 1000/24;
 	redisplay_all();
@@ -421,52 +399,54 @@ void update(int value)
 
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char ** argv) {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowSize(768, 256);
 	glutInitWindowPosition(50, 50);
 	glutInit(&argc, argv);
 
 	PhongShader diffShader(&_scene,vec3f(0.05,0.05,0.05),vec3f(1.0,1.0,1.0),
-			vec3f(0.5,0.5,0.5),10.0);
+						   vec3f(0.5,0.5,0.5),10.0);
 
 	PhongShader planeShader(&_scene,vec3f(0.1,0.1,0.1),vec3f(0.5,0.8,0.5),
-			vec3f(0.0,0.0,0.0));
+							vec3f(0.0,0.0,0.0));
 
 	PhongShader reflShader(&_scene,vec3f(0.0,0.0,0.0),vec3f(0.0,1.0,1.0),
-			vec3f(0.5,0.5,0.5), 10.0,0.5 );
+						   vec3f(0.5,0.5,0.5), 10.0,0.5);
 
 	PhongShader refrShader(&_scene,vec3f(0.05,0.05,0.05),vec3f(0.6,0.6,0.0),
-			vec3f(0.5,0.5,0.5), 20.0,0.3);
+						   vec3f(0.5,0.5,0.5), 20.0,0.3);
 
-	Sphere sphere1(vec3f( 4, 0, 2), 2); sphere1.shader = &reflShader;
-	Sphere sphere2(vec3f( 0, 2, 0), 2); sphere2.shader = &diffShader;
-	Sphere sphere3(vec3f( -5, 2, 0), 2); sphere3.shader = &refrShader;
+	Sphere sphere1(vec3f(4, 0, 2), 2);
+	sphere1.shader = &reflShader;
+	Sphere sphere2(vec3f(0, 2, 0), 2);
+	sphere2.shader = &diffShader;
+	Sphere sphere3(vec3f(-5, 2, 0), 2);
+	sphere3.shader = &refrShader;
 
-	Plane planeBottom 	(vec3f(0, -4, 0), vec3f(0, 1, 0), 5);
+	Plane planeBottom(vec3f(0, -4, 0), vec3f(0, 1, 0), 5);
 	planeBottom._infinite = true;
 
 	planeBottom.shader = &planeShader;
 
 
 	//_checkerTexShader.init("data/checker4.ppm",&_scene);
-	/*	planeTop.shader = &_checkerTexShader; 
-		planeBottom.shader = &_checkerTexShader; 
-		planeLeft.shader = &_checkerTexShader; 
-		planeRight.shader = &_checkerTexShader; 
-		planeBack.shader = &_checkerTexShader; 
-		*/
+	/*  planeTop.shader = &_checkerTexShader;
+	    planeBottom.shader = &_checkerTexShader;
+	    planeLeft.shader = &_checkerTexShader;
+	    planeRight.shader = &_checkerTexShader;
+	    planeBack.shader = &_checkerTexShader;
+	    */
 	worldMotion.zoom = 2.0f;
 
-	Mesh mesh; 
+	Mesh mesh;
 	mesh.shader = &diffShader;
 	mesh.readOff("meshes/bunnysimple.off");
 
 	timer = 0.0;
 
 	light1.set(vec3f(-16,16, 8),100.0,vec3f(0.5,0.5,0.5),vec3f(2.0,2.0,2.0),vec3f(1.0,1.0,1.0),0.9);
-	light2.set(vec3f( 16,16, 4),100.0,vec3f(1.0,1.0,1.0),vec3f(1.5,1.5,1.5),vec3f(1.0,1.0,1.0),0.9);
+	light2.set(vec3f(16,16, 4),100.0,vec3f(1.0,1.0,1.0),vec3f(1.5,1.5,1.5),vec3f(1.0,1.0,1.0),0.9);
 
 	_scene.lights.push_back(&light1);
 	_scene.lights.push_back(&light2);
@@ -474,7 +454,7 @@ int main(int argc, char** argv)
 	_scene.maxBounce = 10;
 
 	_scene.addObject(&sphere1);
-	//	_scene.addObject(&sphere2);
+	//  _scene.addObject(&sphere2);
 	_scene.addObject(&sphere3);
 	_scene.addObject(&mesh);
 	_scene.addObject(&planeBottom);
@@ -483,7 +463,8 @@ int main(int argc, char** argv)
 	v1.set(vec3f(0,1, 0),vec3f(0,1,0));
 	v2.set(vec3f(2,2, 0),vec3f(0.5,1,0));
 
-	Triangle tri(&v0,&v1,&v2); tri.shader = &reflShader;
+	Triangle tri(&v0,&v1,&v2);
+	tri.shader = &reflShader;
 	//_scene.addObject(&tri);
 
 	_id_window = glutCreateWindow("cg1 ex4 ws11/12 - raycasting");
@@ -518,15 +499,14 @@ int main(int argc, char** argv)
 
 
 	/* initialize random seed: */
-	srand ( time(NULL) );
+	srand(time(NULL));
 
-	if (argc == 6)
-	{
+	if (argc == 6) {
 		int width = atoi(argv[2]), height = atoi(argv[3]);
 		int maxBounces = atoi(argv[5]);
 		_scene.maxBounce = maxBounces;
 		int passes = atoi(argv[4]);
-		//	createPrimaryRays(width,height,samplingFactor);
+		//  createPrimaryRays(width,height,samplingFactor);
 
 		vector<Ray> rays(width*height);
 		_scene.frameBuf.resize(width,height);
@@ -536,16 +516,14 @@ int main(int argc, char** argv)
 		light1.radius = 4.0;
 		light2.radius = 4.0;
 
-		for (int i = 0; i < passes; i++)
-		{
+		for (int i = 0; i < passes; i++) {
 			sphere3._c.x += 0.5*1.0/float(passes);
 			sphere3._c.y += 1.0/float(passes);
-			
-				cout << "Render pass #" << (i+1) << " of " << passes << endl;
+
+			cout << "Render pass #" << (i+1) << " of " << passes << endl;
 			for (int y = 0; y < height; y++)
-				for (int x = 0; x < width; x++)
-				{
-					Ray* ray = &rays[y*width+x];
+				for (int x = 0; x < width; x++) {
+					Ray * ray = &rays[y*width+x];
 					ray->setScreenPos(x,y);
 					ray->org.set(0,2,16);
 					ray->tmin = 0; ///screenMotion.znear;
@@ -553,9 +531,9 @@ int main(int argc, char** argv)
 					ray->obj = NULL;
 
 					float xDev = 0, yDev = 0;
-					if (i > 0)
-					{
-						xDev = RND; yDev = RND;
+					if (i > 0) {
+						xDev = RND;
+						yDev = RND;
 					}
 					ray->dir.set((x+xDev)/float(width)-0.5,(y+yDev)/float(height)-0.5,-1.0);
 				}
@@ -565,10 +543,9 @@ int main(int argc, char** argv)
 		Image outImg(width,height);
 		_scene.frameBuf.drawToImage(outImg);
 		outImg.save_ppm(string(argv[1]));
-	} else
-	{
-		if (argc > 1)
-		{
+	}
+	else {
+		if (argc > 1) {
 			cout << "Run program with arguments: " << endl;
 			cout << "./cg1_ex_5 OutputImage.ppm width height passes maxBounces" << endl;
 			return 1;

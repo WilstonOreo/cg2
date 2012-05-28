@@ -4,17 +4,15 @@
 #include "cg2/Shader.hpp"
 #include "cg2/Ray.hpp"
 
-namespace cg2 
-{
-  struct Primitive: public Object
-  {
-    virtual Vec3f normal(const Ray& ray) = 0;
-    virtual TexCoords texCoords(const Ray& ray) = 0;
+namespace cg2 {
+	struct Primitive: public Object {
+		virtual Vec3f normal(const Ray & ray) = 0;
+		virtual TexCoords texCoords(const Ray & ray) = 0;
 
-    virtual bool intersect(Ray& ray) = 0;
-    
-    TBD_DECLARE_PROPERTY(Shader*,shader);
-  };
+		virtual bool intersect(Ray & ray) = 0;
 
-  DEFINE_CONTAINERS(Primitive)
+		TBD_DECLARE_PROPERTY(Shader *,shader);
+	};
+
+	DEFINE_CONTAINERS(Primitive)
 }

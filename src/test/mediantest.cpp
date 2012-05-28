@@ -10,17 +10,18 @@
 
 using namespace std;
 
-int main()
-{
+int main() {
 	vector<double> A(NUM_ELEMENTS);
 
-	srand ( time(NULL) );
-	for (int i = 0; i < NUM_ELEMENTS; i++)
+	srand(time(NULL));
+	for (int i = 0; i < NUM_ELEMENTS; i++) {
 		A[i] = (double)rand()/RAND_MAX;
+	}
 	cout << "Elements of array A: " << endl;
 
-	for (int i = 0; i < NUM_ELEMENTS; i++)
+	for (int i = 0; i < NUM_ELEMENTS; i++) {
 		cout << i << " = " << A[i] << ", ";
+	}
 	cout << endl;
 
 
@@ -32,17 +33,17 @@ int main()
 	sort(A.begin(),A.end());
 	cout << "Elements of array A: " << endl;
 
-	for (int i = 0; i < NUM_ELEMENTS; i++)
+	for (int i = 0; i < NUM_ELEMENTS; i++) {
 		cout << i << " = " << A[i] << ", ";
+	}
 	cout << endl;
 
 
-	if (A[A.size()/2] == a)
-	{
+	if (A[A.size()/2] == a) {
 		cout << "Everything is fine." << endl;
 		return EXIT_SUCCESS;
-	} else
-	{
+	}
+	else {
 		cout << "Results mismatch: " << a << " vs. " << A[(A.size()-1)/2] << endl;
 		return EXIT_FAILURE;
 	}
