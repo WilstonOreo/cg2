@@ -5,6 +5,6 @@
 namespace cg2 {
 	class MeshWriter {
 		public:
-			virtual void write(std::string filename, Vertices * vertices = NULL, Polygons * polygons = NULL) = 0;
+			virtual void write(std::string filename, vector<Vertex> * vertices = NULL, vector<Polygon> * polygons = NULL) = 0;
 	};
 }

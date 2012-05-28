@@ -9,7 +9,7 @@
 using namespace std;
 
 namespace cg2 {
-	void OFFReader::read(std::string filename, Vertices * vertices, Polygons * polygons) {
+	void OFFReader::read(std::string filename, vector<Vertex> * vertices, vector<Polygon> * polygons) {
 		ifstream is(filename.c_str(), ios::in);
 		LOG_MSG << fmt("Reading mesh from % ...") % filename;
 
@@ -74,13 +74,13 @@ namespace cg2 {
 					if (polygons) {
 						int n = atoi(tokens[0].c_str());
 						if (n > 0) {
-							Polygon polygon;
-							polygon.resize(n);
+							vector<Vertex*> polygonVertices;
+							polygonVertices.resize(n);
 							for (int i = 0; i < n; i++) {
-								polygon[i] = &vertices->at(atoi(tokens[i+1].c_str()));
+								polygonVertices[i] = &vertices->at(atoi(tokens[i+1].c_str()));
 							}
 
-							polygons->push_back(polygon);
+							polygons->push_back(Polygon(polygonVertices));
 							nRow++;
 						}
 						if (nRow >= V+F+2) {

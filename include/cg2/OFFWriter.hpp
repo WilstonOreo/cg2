@@ -5,6 +5,6 @@
 namespace cg2 {
 	class OFFWriter {
 		public:
-			void write(std::string filename, Vertices * vertices = NULL, Polygons * polygons = NULL);
+			void write(std::string filename, vector<Vertex> const  * vertices = NULL, vector<Polygon> const * polygons = NULL);
 	};
 }

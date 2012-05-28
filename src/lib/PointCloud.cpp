@@ -40,8 +40,8 @@ namespace cg2 {
 		return true;
 	}
 
-	VertexSet PointSet::vertexSet() {
-		VertexSet result;
+	set<Vertex const *> PointSet::vertexSet() {
+		set<Vertex const *> result;
 		BOOST_FOREACH(const SelectedPoint& p, *this)
 		result.insert(p.v);
 		return result;
@@ -75,7 +75,7 @@ namespace cg2 {
 		return a->v.z < b->v.z;
 	}
 
-	void PointKDTree::collect(KDNode<Vertex> * node, BoundingBox & box, PointSet & pointSet) {
+	void PointKDTree::collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const {
 		if (!node) {
 			return;
 		}
@@ -135,7 +135,7 @@ namespace cg2 {
 		divideNode(node->right,boxRight,depth+1);
 	}
 
-	float PointKDTree::nodeDistance(Point3f & p, BoundingBox & box) {
+	float PointKDTree::nodeDistance(Point3f const & p, BoundingBox const & box) const {
 		if (box.pointInBox(p)) {
 			return 0.0;
 		}
@@ -158,23 +158,23 @@ namespace cg2 {
 
 	}
 
-	void PointCloud::read(string filename) {
+	void PointCloud::read(string const & filename) {
 		OFFReader off;
-		off.read(filename,this,NULL);
+		off.read(filename,&vertices,NULL);
 		update();
 	}
 
-	void PointCloud::write(string filename) {
+	void PointCloud::write(string const & filename) const {
 		OFFWriter off;
-		off.write(filename,this,NULL);
+		off.write(filename,&vertices,NULL);
 	}
 
 	void PointCloud::update() {
 		calcBoundingBox();
-		kdTree.build(*this,boundingBox());
+		kdTree.build(vertices,boundingBox());
 	}
 
-	void PointCloud::draw(Color color) {
+	void PointCloud::draw(Color const & color) const {
 		if (drawBoundingBox_ && !drawKDTree_) {
 			boundingBox().draw(boundingBoxColor());
 		}
@@ -183,7 +183,7 @@ namespace cg2 {
 		}
 
 		glBegin(GL_POINTS);
-		BOOST_FOREACH(Vertex& vertex, *this) {
+		BOOST_FOREACH(Vertex const & vertex, vertices) {
 			if (selection.count(&vertex)) {
 				glColor3f(selectionColor().x,selectionColor().y,selectionColor().z);
 			}
@@ -196,13 +196,13 @@ namespace cg2 {
 	}
 
 
-	void PointCloud::collectKNearest(Point3f & p, int k) {
+	void PointCloud::collectKNearest(Point3f const & p, int k) {
 		PointSet pointSet(p,0.0,k);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
 		selection = pointSet.vertexSet();
 	}
 
-	void PointCloud::collectInRadius(Point3f & p, float radius) {
+	void PointCloud::collectInRadius(Point3f const & p, float radius) {
 		PointSet pointSet(p,radius);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
 		selection = pointSet.vertexSet();

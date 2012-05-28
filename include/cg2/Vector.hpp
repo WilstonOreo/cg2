@@ -47,7 +47,7 @@ namespace cg2 {
 		const float * p() const {
 			return cell;
 		}
-		float operator[](int i) {
+		float operator[](int i) const {
 			return cell[i];
 		}
 

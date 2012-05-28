@@ -23,7 +23,7 @@ namespace cg2 {
 			PointSet(Point3f _center, float _radius = 0.0, int _k = 0);
 
 			bool insert(Vertex * v);
-			VertexSet vertexSet();
+			set<Vertex const *> vertexSet();
 			float maxDist();
 
 			TBD_DECLARE_PROPERTY(int,k);
@@ -34,13 +34,13 @@ namespace cg2 {
 	class PointKDTree : public KDTree<Vertex> {
 		public:
 			PointKDTree() : drawDepth_(10) {}
-			void collect(KDNode<Vertex> * node, BoundingBox & box, PointSet & pointSet);
+			void collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const;
 
 			TBD_DECLARE_PROPERTY(unsigned,drawDepth);
 		private:
 			void divideNode(KDNode<Vertex> * node, BoundingBox & box, int depth);
 
-			float nodeDistance(Point3f & p, BoundingBox & box);
+			float nodeDistance(Point3f const & p, BoundingBox const & box) const;
 	};
 
 
@@ -48,28 +48,28 @@ namespace cg2 {
 		public:
 			PointCloud();
 
-			void read(string filename);
-			void write(string filename);
+			void read(string const & filename);
+			void write(string const & filename) const;
 
-			void draw(Color color = Color());
+			void draw(Color const & color = Color()) const;
 
-			Vec3f normal(const Ray & ray) {
+			Vec3f normal(const Ray & ray) const {
 				return Vec3f();
 			}
-			TexCoords texCoords(const Ray & ray) {
+			TexCoords texCoords(const Ray & ray) const {
 				return TexCoords();
 			}
 
-			bool intersect(Ray & ray) {
+			bool intersect(Ray & ray) const {
 				return false;
 			}
 
 
 			void update();
-			void collectKNearest(Point3f & p, int k);
-			void collectInRadius(Point3f & p, float radius);
+			void collectKNearest(Point3f const & p, int k);
+			void collectInRadius(Point3f const & p, float radius);
 
-			VertexSet selection;
+			set<Vertex const *> selection;
 
 			TBD_DECLARE_PROPERTY(bool,drawKDTree);
 			TBD_DECLARE_PROPERTY_REF(Color,kdTreeColor);

@@ -23,20 +23,23 @@ namespace cg2 {
 		}
 	};
 
-	typedef vector<Vertex> Vertices;
-	typedef vector<Vertex *> VertexList;
-	typedef std::set<Vertex *> VertexSet;
+	struct Polygon {
+		vector<Vertex *> vertices;
+		Polygon(vector<Vertex *> const & vertices) {
+			this->vertices = vertices;
+		}
 
-	struct Polygon : public VertexList {
 		Polygon(int n = 3) {
 			if (n < 3) {
 				n = 3;
 			}
-			resize(n);
+			vertices.resize(n);
 		}
+
+		size_t size() const {
+			return vertices.size();
+		}
+
 		Vec3f normal();
 	};
-
-	typedef vector<Polygon *> PolygonList;
-	typedef vector<Polygon> Polygons;
 }

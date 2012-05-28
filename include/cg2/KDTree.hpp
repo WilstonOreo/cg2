@@ -13,7 +13,7 @@ namespace cg2 {
 			right = NULL;
 		}
 
-		bool isLeaf() {
+		bool isLeaf() const {
 			return (!left && !right);
 		}
 
@@ -33,7 +33,7 @@ namespace cg2 {
 			right = NULL;
 		}
 
-		void draw(Color color, BoundingBox & box, int depth, int maxDepth) {
+		void draw(Color const & color, BoundingBox const & box, int depth, int maxDepth) const {
 			if (isLeaf() || depth >= maxDepth) {
 				box.draw(color);
 				return;
@@ -65,7 +65,7 @@ namespace cg2 {
 				root = NULL;
 			}
 
-			void draw(Color color, BoundingBox & box) {
+			void draw(Color const & color, BoundingBox const & box) const {
 				if (root) {
 					root->draw(color,box,0,12);
 				}

@@ -9,7 +9,7 @@ namespace cg2 {
 			void draw(Color color = Color());
 			void displayNormals();
 
-			TBD_DECLARE_PROPERTY_REF(Polygons,polygons);
+			TBD_DECLARE_PROPERTY_REF(vector<Polygon>,polygons);
 		protected:
 			void calcNormals();
 	};

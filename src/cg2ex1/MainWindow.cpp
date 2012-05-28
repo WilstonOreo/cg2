@@ -48,7 +48,7 @@ void MainWindow::setVertexId() {
 		value = (int)glWidget->pointCloud.size()-1;
 	}
 
-	glWidget->selection = glWidget->pointCloud[value].v;
+	glWidget->selection = glWidget->pointCloud.vertices[value].v;
 
 	if (glWidget->selectionMode == GLWidget::SELECT_RADIUS) {
 		glWidget->pointCloud.collectInRadius(glWidget->selection,glWidget->radius);

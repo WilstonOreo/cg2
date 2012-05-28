@@ -5,13 +5,13 @@
 using namespace std;
 
 namespace cg2 {
-	bool BoundingBox::pointInBox(Point3f p) {
+	bool BoundingBox::pointInBox(Point3f const & p) const {
 		return p.x > min.x && p.x < max.x &&
 			   p.y > min.y && p.y < max.y &&
 			   p.z > min.z && p.z < max.z;
 	}
 
-	bool BoundingBox::intersect(Ray & ray) {
+	bool BoundingBox::intersect(Ray & ray) const {
 		float tnear = 1000.0, tfar = -1000.0;
 		for (int i = 0; i < 3; i++) {
 			if (abs(ray.dir[i]) < 0.001) {
@@ -40,7 +40,7 @@ namespace cg2 {
 		return (tnear < tfar);
 	}
 
-	Axis BoundingBox::dominantAxis() {
+	Axis BoundingBox::dominantAxis() const {
 		Vec3f d = min - max;
 		d.set(abs(d.x),abs(d.y),abs(d.z));
 		if (d.x > d.y) {
@@ -54,19 +54,14 @@ namespace cg2 {
 		return Z;
 	}
 
-	void BoundingBox::split(float splitPos, Axis axis, BoundingBox & boxLeft, BoundingBox & boxRight) {
-		for (int i = 0; i < 3; i++)
-			if (min.cell[i] > max.cell[i]) {
-				swap(min.cell[i],max.cell[i]);
-			}
-
+	void BoundingBox::split(float splitPos, Axis const & axis, BoundingBox & boxLeft, BoundingBox & boxRight) const {
 		boxLeft.set(min,max);
 		boxRight.set(min,max);
 		boxLeft.max.cell[axis] = splitPos;
 		boxRight.min.cell[axis] = splitPos;
 	}
 
-	void BoundingBox::draw(Color color) {
+	void BoundingBox::draw(Color const & color) const {
 		float x  = min.x, y  = min.y, z  = min.z;
 		float xs = max.x, ys = max.y, zs = max.z;
 
