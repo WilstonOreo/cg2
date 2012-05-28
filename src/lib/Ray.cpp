@@ -37,6 +37,7 @@ namespace cg2
     reflRay.bounce = bounce + 1;
     return reflRay;
 */
+      return Ray();
   }
 
   Ray Ray::refract(float index)
@@ -54,6 +55,7 @@ namespace cg2
     refrRay.obj = obj;
     return refrRay;
 */
+      return Ray();
     }
 
   string Ray::toString()
@@ -64,6 +66,7 @@ namespace cg2
     ss << "Tmin, Tmax" << tmin << "," << tmax;
     return ss.str(); 
 */
+      return "Ray?";
   }
 
 }

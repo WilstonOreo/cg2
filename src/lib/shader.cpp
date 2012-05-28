@@ -59,12 +59,12 @@ namespace cg2
     Image* img = &mipMaps[(int)mipMapLevel];
     int w = img->width(), h = img->height(); 
     float px = x*w, py = y*h; Vec3f color[2];
-    float idx = 0; float fracL = modf( mipMapLevel, &idx);
+    //float idx = 0; float fracL = modf( mipMapLevel, &idx);
 
     int i = 0;
     //for (int i = 0; i < 2; i++)
     {
-      int mIdx = int(idx) + i;
+      //int mIdx = int(idx) + i;
       float fracX = modf( px, &px ), fracY = modf(py, &py);
       u32 X = u32(px), Y = u32(py);
 
