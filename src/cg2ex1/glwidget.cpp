@@ -40,11 +40,6 @@ void GLWidget::initializeGL() {
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	glEnable(GL_CULL_FACE);
-
-	// fix outlines z-fighting withthe quads
-	glPolygonOffset(1, 1);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-
 }
 
 void GLWidget::update() {
@@ -55,7 +50,7 @@ void GLWidget::update() {
 		pointCloud.collectKNearest(selection,kNearest);
 	}
 
-	paintGL();
+	updateGL();
 }
 
 void GLWidget::resizeGL(int w, int h) {
@@ -164,10 +159,8 @@ void GLWidget::mousePressEvent(QMouseEvent * event) {
 			old_x = event->x();
 			old_y = event->y();
 			lbutton = true;
-			cerr << "nan" << endl;
 		}
 		else {
-			cerr << "not nan" << endl;
 			selection = newSelection;
 		}
 
