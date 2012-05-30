@@ -5,9 +5,9 @@
 
 namespace cg2 {
 
-  class PointSet2D : public PointSet {
+	class PointSet2D : public PointSet {
 		public:
-			PointSet2D(Point3f _center, float _radius = 0.0, int _k = 0);
+			PointSet2D(Point3f _center, float _radius = std::numeric_limits<float>::max(), int _k = std::numeric_limits<int>::max());
 
 			bool insert(Vertex * v);
 	};
@@ -24,9 +24,6 @@ namespace cg2 {
 
 	class PointCloud2D : public PointCloud {
 		public:
-
-			void draw(Color const & color = Color()) const;
-
 			void update();
 			set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
 			set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;

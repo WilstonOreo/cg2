@@ -11,21 +11,22 @@ namespace cg2
 	}
 
 	bool PointSet2D::insert(Vertex * v) {
+		Vec3f distVec = v->v - center(); distVec.z = 0.0;
+		float dist = distVec.length();
+		if (dist > radius()) return false;
 
-    Vec3f distVec = v->v-center(); distVec.z = 0.0;
-    float dist = distVec.length();
-		if (radius() > 0.0f && dist > radius()) return false;
+		if (int(points.size()) >= k())
+			if (!points.empty() && (--points.end())->first < dist) return false;
 
-		if (k() && int(size()) >= k())
-			if ((--end())->dist < dist) return false;
+		points.insert(make_pair(dist,v));
 
-		SelectedPoint p(dist,v);
-		std::set<SelectedPoint,PointCompare>::insert(p);
+		if (points.empty())
+			return true;
 
-		PointSet::iterator it = end();
+		map<double, Vertex *>::iterator it = points.end();
 		it--;
-		if (k() && int(size()) > k() && !empty()) {
-			erase(it);
+		if (int(points.size()) > k()) {
+			points.erase(it);
 		}
 		return true;
 	}
@@ -100,8 +101,7 @@ namespace cg2
 		if (box.pointInBox(p)) return 0.0;
 
 		float minDist = INF;
-		FOREACH_AXIS 
-    {
+		FOREACH_AXIS {
 			if (axis == Z) continue;
 			minDist = std::min(std::abs(p[axis] - box.min[axis]),std::abs(box.max[axis] - p[axis]));
 		}
@@ -116,7 +116,7 @@ namespace cg2
 	}
 
 	set<Vertex const *> PointCloud2D::collectKNearest(Point3f const & p, int k) const {
-		PointSet2D pointSet(p,0.0,k);
+		PointSet2D pointSet(p,std::numeric_limits<float>::max(),k);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
 		return pointSet.vertexSet();
 	}

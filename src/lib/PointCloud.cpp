@@ -14,36 +14,38 @@
 using namespace std;
 
 namespace cg2 {
+	typedef pair<double,Vertex *> entry;
+
 	PointSet::PointSet(Point3f _center, float _radius, int _k) : k_(_k), radius_(_radius), center_(_center) {
 
 	}
 
 	bool PointSet::insert(Vertex * v) {
-		float dist = (v->v-center()).length();
-		if (radius_ > 0.0f && dist > radius_) {
-			return false;
-		}
+		Vec3f distVec = v->v-center();
+		float dist = distVec.length();
+		if (dist > radius()) return false;
 
-		if (k_ && int(size()) >= k_)
-			if ((--end())->dist < dist) {
-				return false;
-			}
+		if (int(points.size()) >= k())
+			if (!points.empty() && (--points.end())->first < dist) return false;
 
-		SelectedPoint p(dist,v);
-		std::set<SelectedPoint,PointCompare>::insert(p);
+		points.insert(make_pair(dist, v));
 
-		PointSet::iterator it = end();
+		if (points.empty())
+			return true;
+
+		multimap<double, Vertex *>::iterator it = points.end();
 		it--;
-		if (k_ && int(size()) > k_ && !empty()) {
-			erase(it);
+		if (int(points.size()) > k()) {
+			points.erase(it);
 		}
 		return true;
 	}
 
 	set<Vertex const *> PointSet::vertexSet() {
 		set<Vertex const *> result;
-		BOOST_FOREACH(const SelectedPoint& p, *this)
-			result.insert(p.v);
+		BOOST_FOREACH(const entry & p, points) {
+			result.insert(p.second);
+		}
 		return result;
 	}
 
@@ -53,13 +55,13 @@ namespace cg2 {
 		}
 
 		if (k_) {
-			if (k_ < int(size()) && radius_ >  0.0f) {
+			if (k_ < int(points.size()) && radius_ >  0.0f) {
 				return radius_;
 			}
-			if (k_ >= int(size()) && !empty()) {
-				PointSet::iterator it = end();
+			if (k_ >= int(points.size()) && !points.empty()) {
+				multimap<double,Vertex *>::iterator it = points.end();
 				it--;
-				return it->dist;
+				return it->first;
 			}
 		}
 		return INF;
@@ -160,6 +162,7 @@ namespace cg2 {
 	}
 
 	void PointCloud::read(string const & filename) {
+		vertices.clear();
 		OFFReader off;
 		off.read(filename,&vertices,NULL);
 		update();
@@ -198,7 +201,7 @@ namespace cg2 {
 
 
 	set<Vertex const *> PointCloud::collectKNearest(Point3f const & p, int k) const {
-		PointSet pointSet(p,0.0,k);
+		PointSet pointSet(p,std::numeric_limits<float>::max(),k);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
 		return pointSet.vertexSet();
 	}

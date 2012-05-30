@@ -4,13 +4,14 @@
 #include <QGLWidget>
 
 #include "cg2/PointCloud.hpp"
+#include "cg2/PointCloud2D.hpp"
 
 class GLWidgetEx2 : public QGLWidget {
 		Q_OBJECT
 	public:
 		explicit GLWidgetEx2(QWidget * parent = 0);
 
-		cg2::PointCloud pointCloud;
+		cg2::PointCloud2D pointCloud;
 		cg2::PointCloud pointGrid;
 
 		void mouseMoveEvent(QMouseEvent * event);
@@ -22,8 +23,11 @@ class GLWidgetEx2 : public QGLWidget {
 		virtual void paintGL();
 
 	private:
+		void recalc();
+
 		float pointSizeSource;
 		float pointSizeGrid;
+		int gridSize;
 
 		// some stateholders for mouse motion
 		// last mouse position in window
@@ -35,6 +39,7 @@ class GLWidgetEx2 : public QGLWidget {
 	public slots:
 		void setPointSizeSource(double size);
 		void setPointSizeGrid(double size);
+		void setGridSize(int size);
 		void setDrawKDTree(int state);
 };
 

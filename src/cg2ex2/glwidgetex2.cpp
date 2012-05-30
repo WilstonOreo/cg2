@@ -24,16 +24,25 @@ void GLWidgetEx2::setPointSizeGrid(double size) {
 	updateGL();
 }
 
+void GLWidgetEx2::setGridSize(int size) {
+	gridSize = size;
+	recalc();
+	updateGL();
+}
+
 void GLWidgetEx2::setDrawKDTree(int state) {
 	pointCloud.drawKDTree(state != Qt::Unchecked);
 	updateGL();
 }
 
-void makeGrid(PointCloud & out, PointCloud const & in);
-void GLWidgetEx2::initializeGL() {
+void GLWidgetEx2::recalc() {
 	pointCloud.read("franke4.off");
-	makeGrid(pointGrid, pointCloud);
+	void makeGrid(PointCloud & out, PointCloud const & in, int gridSize);
+	makeGrid(pointGrid, pointCloud, gridSize);
+}
 
+void GLWidgetEx2::initializeGL() {
+	recalc();
 	// Set up the rendering context, define display lists etc.:
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
@@ -164,19 +173,20 @@ void GLWidgetEx2::mousePressEvent(QMouseEvent * event) {
 	}
 }
 
-double wendland(double x) {
-	x *= 50;
+double wendland(double d, double h) {
+	/*x *= h;
 	const double Q_PI = 3.14159265358979323846;
-	return (1/sqrt(2*Q_PI))*exp(-0.5*x*x); // gauss, not wendland
-	//return 3-x;
+	return (1/sqrt(2*Q_PI))*exp(-0.5*d*d); // gauss, not wendland*/
+	return std::pow(1-d/h, 4)*(4*d/h+1);
 }
 
-void makeGrid(PointCloud & out, PointCloud const & in) {
-	int const width = 25, height = 25;
-	float const xdist = 0.08, ydist = 0.08;
-	float const xmin = -1, ymin = -1;
+void makeGrid(PointCloud & out, PointCloud const & in, int gridSize) {
+	BoundingBox box = in.boundingBox();
+	int const width = gridSize, height = gridSize;
+	float const xdist = box.size().x / width, ydist = box.size().y / height;
+	float const xmin = box.min.x, ymin = box.min.y;
 
-	float const radius = sqrt(64*(xdist*xdist + ydist*ydist)); // <-- die 64 muss runter... weit runter
+	float const radius = sqrt(xdist*xdist + ydist*ydist)*2;
 	//float const radius = 2;
 
 
@@ -199,23 +209,27 @@ void makeGrid(PointCloud & out, PointCloud const & in) {
 				pFlat.z = 0;
 
 				double distance = (currentXY-pFlat).length(); // Distanz zwischen P und (x,y,0)
-				double weight = wendland(distance);
-				//weight = 1;
+				if ((currentXY-p).length() > radius) {
+					std::cout << "point exceeds radius: " << (currentXY-p).length() << std::endl;
+				}
+				double weight = wendland(distance, radius);
+
 				sumWeight += weight;
 				currentZ += weight * p.z;
+
 				nPoints++;
 			}
-			if (nPoints > 0 && sumWeight > 0.001) {
-				std::cout
+			if (nPoints && sumWeight) {
+				/*std::cout
 						<< "nPoints=" << nPoints
 						<< " sumWeight=" << sumWeight
-						<< " currentZ=" << currentZ;
+						<< " currentZ=" << currentZ;*/
 
 				//current /= nPoints;
 				currentZ /= sumWeight;
-				std::cout
+				/*std::cout
 						<< " after=" << currentZ
-						<< std::endl;
+						<< std::endl;*/
 			}
 
 			//grid[y*width+x] = current;

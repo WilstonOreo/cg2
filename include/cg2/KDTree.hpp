@@ -25,12 +25,17 @@ namespace cg2 {
 		vector<T *> objs;
 
 		void free() {
-			left->free();
-			delete left;
-			left = NULL;
-			right->free();
-			delete right;
-			right = NULL;
+			if (left) {
+				left->free();
+				delete left;
+				left = NULL;
+			}
+
+			if (right) {
+				right->free();
+				delete right;
+				right = NULL;
+			}
 		}
 
 		void draw(Color const & color, BoundingBox const & box, int depth, int maxDepth) const {

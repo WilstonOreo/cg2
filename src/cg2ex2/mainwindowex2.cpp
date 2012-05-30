@@ -38,6 +38,13 @@ void MainWindowEx2::setupUi() {
 	uiPointSizeGrid->setSingleStep(0.2);
 	layout->addWidget(uiPointSizeGrid, 2, 1);
 
+	uiGridSizeLabel = new QLabel("Grid Point size");
+	layout->addWidget(uiGridSizeLabel, 3, 0);
+
+	uiGridSize = new QSpinBox();
+	uiGridSize->setSingleStep(1);
+	layout->addWidget(uiGridSize, 3, 1);
+
 	uiRenderSettings = new QDockWidget();
 
 	QWidget * tmpWidget = new QWidget();
@@ -52,10 +59,12 @@ MainWindowEx2::MainWindowEx2(QMainWindow * parent) : QMainWindow(parent) {
 
 	connect(uiPointSizeSource,SIGNAL(valueChanged(double)), glWidget, SLOT(setPointSizeSource(double)));
 	connect(uiPointSizeGrid,SIGNAL(valueChanged(double)), glWidget, SLOT(setPointSizeGrid(double)));
+	connect(uiGridSize,SIGNAL(valueChanged(int)), glWidget, SLOT(setGridSize(int)));
 	connect(uiRenderKDTree,SIGNAL(stateChanged(int)), glWidget, SLOT(setDrawKDTree(int)));
 
 	uiPointSizeSource->setValue(2);
 	uiPointSizeGrid->setValue(1);
+	uiGridSize->setValue(25);
 }
 
 MainWindowEx2::~MainWindowEx2() {

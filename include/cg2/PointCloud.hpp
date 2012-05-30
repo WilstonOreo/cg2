@@ -3,26 +3,15 @@
 #include "cg2/Mesh.hpp"
 #include "cg2/KDTree.hpp"
 
-#include <set>
+#include <map>
 
 namespace cg2 {
-	struct SelectedPoint {
-		SelectedPoint(float _dist, Vertex * _v) : dist(_dist), v(_v) {}
-		float dist;
-		Vertex * v;
-	};
-
-	struct PointCompare {
-		bool operator()(const SelectedPoint & a, const SelectedPoint & b) {
-			return a.dist < b.dist;
-		}
-	};
-
-	class PointSet : public std::set<SelectedPoint,PointCompare> {
+	class PointSet {
 		public:
-			PointSet(Point3f _center, float _radius = 0.0, int _k = 0);
+			std::multimap<double, Vertex *> points;
+			PointSet(Point3f _center, float _radius = std::numeric_limits<float>::max(), int _k = std::numeric_limits<int>::max());
 
-			bool insert(Vertex * v);
+			virtual bool insert(Vertex * v);
 			set<Vertex const *> vertexSet();
 			float maxDist();
 
@@ -34,13 +23,13 @@ namespace cg2 {
 	class PointKDTree : public KDTree<Vertex> {
 		public:
 			PointKDTree() : drawDepth_(10) {}
-			void collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const;
+			virtual void collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const;
 
 			TBD_DECLARE_PROPERTY(unsigned,drawDepth)
 		private:
-			void divideNode(KDNode<Vertex> * node, BoundingBox & box, int depth);
+			virtual void divideNode(KDNode<Vertex> * node, BoundingBox & box, int depth);
 
-			float nodeDistance(Point3f const & p, BoundingBox const & box) const;
+			virtual float nodeDistance(Point3f const & p, BoundingBox const & box) const;
 	};
 
 
@@ -67,9 +56,9 @@ namespace cg2 {
 				return false;
 			}
 
-			void update();
-			set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
-			set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;
+			virtual void update();
+			virtual set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
+			virtual set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;
 
 			set<Vertex const *> selection;
 
