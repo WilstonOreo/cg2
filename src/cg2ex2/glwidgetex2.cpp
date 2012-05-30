@@ -121,8 +121,6 @@ void GLWidgetEx2::paintGL() {
 	cg2::Vec3f c = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
 	glTranslatef(-c.x,-c.y,-c.z);
 	pointCloud.draw(cg2::Color(0.8,0.5,0.0));
-
-	swapBuffers();
 }
 
 
@@ -131,11 +129,7 @@ void GLWidgetEx2::paintGL() {
 void GLWidgetEx2::mouseMoveEvent(QMouseEvent * event) {
 	if (event->buttons() != Qt::NoButton) {
 		angle += event->x() - old_x;
-		//int motionY = event->y() - old_y;
-		//mouseMotion(motionX, motionY);
-		//
-		resizeGL(this->width(),this->height());
-		paintGL();
+		updateGL();
 
 		old_x = event->x();
 		old_y = event->y();

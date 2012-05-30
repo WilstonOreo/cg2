@@ -10,7 +10,9 @@ DEPENDPATH += . \
               src/test
 INCLUDEPATH += . src/cg2ex1 include ../TbdLib/include
 
-LIBS += -lGLU
+!win32|win64 {
+    LIBS += -lGLU
+}
 
 QT += opengl
 
