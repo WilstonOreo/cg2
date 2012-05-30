@@ -47,7 +47,9 @@ HEADERS += include/cg2/BoundingBox.hpp \
            include/cg2/Triangle.hpp \
            include/cg2/TriangleMesh.hpp \
            include/cg2/Vector.hpp \
-		   include/cg2/Vertex.hpp
+		   include/cg2/Vertex.hpp \
+		   include/cg2/PointCloud2D.hpp \
+		   include/cg2/Grid.hpp
 
 SOURCES += src/lib/BoundingBox.cpp \
            src/lib/Camera.cpp \
@@ -65,7 +67,9 @@ SOURCES += src/lib/BoundingBox.cpp \
            src/lib/Sphere.cpp \
            src/lib/Triangle.cpp \
            src/lib/Vector.cpp \
-		   src/lib/Vertex.cpp
+		   src/lib/Vertex.cpp \
+		   src/lib/Grid.cpp \
+		   src/lib/PointCloud2D.cpp
 
 cg2ex1 {
 	TARGET = cg2ex1

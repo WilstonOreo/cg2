@@ -43,7 +43,7 @@ namespace cg2 {
 	set<Vertex const *> PointSet::vertexSet() {
 		set<Vertex const *> result;
 		BOOST_FOREACH(const SelectedPoint& p, *this)
-		result.insert(p.v);
+			result.insert(p.v);
 		return result;
 	}
 
@@ -142,6 +142,7 @@ namespace cg2 {
 
 		float minDist = INF;
 		FOREACH_AXIS {
+			if (axis == Z) continue;
 			minDist = std::min(std::abs(p[axis] - box.min[axis]),std::abs(box.max[axis] - p[axis]));
 		}
 
@@ -196,16 +197,16 @@ namespace cg2 {
 	}
 
 
-	void PointCloud::collectKNearest(Point3f const & p, int k) {
+	set<Vertex const *> PointCloud::collectKNearest(Point3f const & p, int k) const {
 		PointSet pointSet(p,0.0,k);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
-		selection = pointSet.vertexSet();
+		return pointSet.vertexSet();
 	}
 
-	void PointCloud::collectInRadius(Point3f const & p, float radius) {
+	set<Vertex const *> PointCloud::collectInRadius(Point3f const & p, float radius) const {
 		PointSet pointSet(p,radius);
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
-		selection = pointSet.vertexSet();
+		return pointSet.vertexSet();
 	}
 
 }

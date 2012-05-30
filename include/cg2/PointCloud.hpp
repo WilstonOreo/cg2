@@ -26,9 +26,9 @@ namespace cg2 {
 			set<Vertex const *> vertexSet();
 			float maxDist();
 
-			TBD_DECLARE_PROPERTY(int,k);
-			TBD_DECLARE_PROPERTY(float,radius);
-			TBD_DECLARE_PROPERTY_REF(Point3f,center);
+			TBD_DECLARE_PROPERTY(int,k)
+			TBD_DECLARE_PROPERTY(float,radius)
+			TBD_DECLARE_PROPERTY_REF(Point3f,center)
 	};
 
 	class PointKDTree : public KDTree<Vertex> {
@@ -36,7 +36,7 @@ namespace cg2 {
 			PointKDTree() : drawDepth_(10) {}
 			void collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const;
 
-			TBD_DECLARE_PROPERTY(unsigned,drawDepth);
+			TBD_DECLARE_PROPERTY(unsigned,drawDepth)
 		private:
 			void divideNode(KDNode<Vertex> * node, BoundingBox & box, int depth);
 
@@ -67,10 +67,9 @@ namespace cg2 {
 				return false;
 			}
 
-
 			void update();
-			void collectKNearest(Point3f const & p, int k);
-			void collectInRadius(Point3f const & p, float radius);
+			set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
+			set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;
 
 			set<Vertex const *> selection;
 

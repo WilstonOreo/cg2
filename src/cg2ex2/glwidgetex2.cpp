@@ -6,6 +6,8 @@
 #include <qnumeric.h>
 #include <QMouseEvent>
 
+#include <iostream>
+
 using namespace cg2;
 
 GLWidgetEx2::GLWidgetEx2(QWidget * parent) :
@@ -22,8 +24,10 @@ void GLWidgetEx2::setDrawKDTree(int state) {
 	updateGL();
 }
 
+void makeGrid(PointCloud & out, PointCloud const & in);
 void GLWidgetEx2::initializeGL() {
 	pointCloud.read("franke4.off");
+	makeGrid(pointGrid, pointCloud);
 
 	// Set up the rendering context, define display lists etc.:
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -118,9 +122,11 @@ void GLWidgetEx2::paintGL() {
 	glRotatef(270, 1, 0, 0);
 	glRotatef(angle, 0, 0, 1);
 
-	cg2::Vec3f c = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
-	glTranslatef(-c.x,-c.y,-c.z);
-	pointCloud.draw(cg2::Color(0.8,0.5,0.0));
+	cg2::Vec3f camera = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
+	glTranslatef(-camera.x,-camera.y,-camera.z);
+	if (pointSize) pointCloud.draw(cg2::Color(0.8,0.5,0.0));
+	glPointSize(1);
+	pointGrid.draw(cg2::Color(0.0,0.5,1.0));
 }
 
 
@@ -144,4 +150,67 @@ void GLWidgetEx2::mousePressEvent(QMouseEvent * event) {
 
 		updateGL();
 	}
+}
+
+double wendland(double x) {
+	x *= 50;
+	const double Q_PI = 3.14159265358979323846;
+	return (1/sqrt(2*Q_PI))*exp(-0.5*x*x); // gauss, not wendland
+	//return 3-x;
+}
+
+void makeGrid(PointCloud & out, PointCloud const & in) {
+	int const width = 25, height = 25;
+	float const xdist = 0.08, ydist = 0.08;
+	float const xmin = -1, ymin = -1;
+
+	float const radius = sqrt(64*(xdist*xdist + ydist*ydist)); // <-- die 64 muss runter... weit runter
+	//float const radius = 2;
+
+
+	//vector<float> grid;  // Den Typ Array2D gibts nich, analog kann man auch vector< vector<float> > nehmen
+	//grid.resize(width*height);
+
+	out.vertices.clear();
+	for (int xp = 0; xp < width; xp++) {
+		float x = xmin + xp*xdist;
+		for (int yp = 0; yp < height; yp++) {
+			float y = ymin + yp*ydist;
+
+			Point3f currentXY(x, y, 0);
+			int nPoints = 0;
+			double sumWeight = 0;
+			double currentZ = 0;
+			foreach (Vertex const * v, in.collectInRadius(currentXY, radius)) {
+				Point3f const & p = v->v;
+				Point3f pFlat(p);
+				pFlat.z = 0;
+
+				double distance = (currentXY-pFlat).length(); // Distanz zwischen P und (x,y,0)
+				double weight = wendland(distance);
+				//weight = 1;
+				sumWeight += weight;
+				currentZ += weight * p.z;
+				nPoints++;
+			}
+			if (nPoints > 0 && sumWeight > 0.001) {
+				std::cout
+						<< "nPoints=" << nPoints
+						<< " sumWeight=" << sumWeight
+						<< " currentZ=" << currentZ;
+
+				//current /= nPoints;
+				currentZ /= sumWeight;
+				std::cout
+						<< " after=" << currentZ
+						<< std::endl;
+			}
+
+			//grid[y*width+x] = current;
+
+			currentXY.z = currentZ;
+			out.vertices.push_back(currentXY);
+		}
+	}
+	out.update();
 }

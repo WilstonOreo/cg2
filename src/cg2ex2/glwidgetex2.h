@@ -11,6 +11,7 @@ class GLWidgetEx2 : public QGLWidget {
 		explicit GLWidgetEx2(QWidget * parent = 0);
 
 		cg2::PointCloud pointCloud;
+		cg2::PointCloud pointGrid;
 
 		void mouseMoveEvent(QMouseEvent * event);
 		void mousePressEvent(QMouseEvent * event);

@@ -71,7 +71,7 @@ namespace cg2 {
 				}
 			}
 
-			void build(vector<T> const & objs, BoundingBox & boundingBox) {
+			void build(vector<T> & objs, BoundingBox & boundingBox) {
 				clear();
 				root = new Node;
 				root->objs.reserve(objs.size());
@@ -82,7 +82,6 @@ namespace cg2 {
 
 				divideNode(root,boundingBox,0);
 			}
-
 
 		private:
 			virtual void divideNode(Node * node, BoundingBox & boundingBox, int depth) = 0;
