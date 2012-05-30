@@ -1,31 +1,19 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-#include <QtOpenGL/QGLWidget>
+#include <QGLWidget>
 
 #include "cg2/PointCloud.hpp"
 
-class GLWidget : public QGLWidget {
+class GLWidgetEx2 : public QGLWidget {
 		Q_OBJECT
 	public:
-		explicit GLWidget(QWidget * parent = 0);
+		explicit GLWidgetEx2(QWidget * parent = 0);
 
 		cg2::PointCloud pointCloud;
 
 		void mouseMoveEvent(QMouseEvent * event);
 		void mousePressEvent(QMouseEvent * event);
-		void mouseReleaseEvent(QMouseEvent * event);
-
-		typedef enum { SELECT_KNEAREST, SELECT_RADIUS } SelectionMode;
-
-		float pointSize;
-		float radius;
-		int kNearest;
-		SelectionMode selectionMode;
-
-		cg2::Point3f selection;
-
-		void update();
 
 	protected:
 		virtual void initializeGL();
@@ -33,18 +21,17 @@ class GLWidget : public QGLWidget {
 		virtual void paintGL();
 
 	private:
+		float pointSize;
 		// some stateholders for mouse motion
 		// last mouse position in window
 		int old_x, old_y;
-		// is left mouse button pressed
-		bool lbutton;
 		float angle;
-
 
 	signals:
 
 	public slots:
-
+		void setPointSize(double size);
+		void setDrawKDTree(int state);
 };
 
 #endif // GLWIDGET_H

@@ -1,29 +1,29 @@
-#include "tbd/log.h"
 #include "cg2/Vector.hpp"
 
-#include "glwidget.h"
+#include "glwidgetex2.h"
 
-#include "helper.h"
 #include <GL/glu.h>
-
-LOG_INIT;
+#include <qnumeric.h>
+#include <QMouseEvent>
 
 using namespace cg2;
 
-GLWidget::GLWidget(QWidget * parent) :
+GLWidgetEx2::GLWidgetEx2(QWidget * parent) :
 	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent) {
-	old_x = 0;
-	old_y = 0;
-	lbutton = false;
-	angle = 0.0;
-	pointSize = 2.0;
-	kNearest = 10;
-	radius = 2.0;
-	selectionMode = SELECT_RADIUS;
 }
 
-void GLWidget::initializeGL() {
-	pointCloud.read("cow.off");
+void GLWidgetEx2::setPointSize(double size) {
+	pointSize = size;
+	updateGL();
+}
+
+void GLWidgetEx2::setDrawKDTree(int state) {
+	pointCloud.drawKDTree(state != Qt::Unchecked);
+	updateGL();
+}
+
+void GLWidgetEx2::initializeGL() {
+	pointCloud.read("franke4.off");
 
 	// Set up the rendering context, define display lists etc.:
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -47,19 +47,8 @@ void GLWidget::initializeGL() {
 
 }
 
-void GLWidget::update() {
-	if (selectionMode == SELECT_RADIUS) {
-		pointCloud.collectInRadius(selection,radius);
-	}
-	else if (selectionMode == SELECT_KNEAREST) {
-		pointCloud.collectKNearest(selection,kNearest);
-	}
-
-	paintGL();
-}
-
-void GLWidget::resizeGL(int w, int h) {
-
+void GLWidgetEx2::resizeGL(int w, int h) {
+	// round w and h to multiples of 2
 	w = w & ~1;
 	h = h & ~1;
 	// setup viewport, projection etc.:
@@ -78,9 +67,9 @@ void GLWidget::resizeGL(int w, int h) {
 	GLdouble centerY= 0;
 	GLdouble centerZ= 0;
 	// set camera parameters
-	GLdouble eyeX=pointCloud.boundingBox().size().length()*cos(angle/100.0);
+	GLdouble eyeX=0;
 	GLdouble eyeY=pointCloud.boundingBox().size().y*1.5;
-	GLdouble eyeZ=pointCloud.boundingBox().size().length()*sin(angle/100.0);
+	GLdouble eyeZ=-pointCloud.boundingBox().size().length();
 	GLdouble upX=0;
 	GLdouble upY=1;
 	GLdouble upZ=0;
@@ -93,6 +82,7 @@ void GLWidget::resizeGL(int w, int h) {
 
 	glMatrixMode(GL_MODELVIEW);
 
+	update();
 }
 
 Point3f unProject(QPoint const & pos) {
@@ -120,21 +110,16 @@ Point3f unProject(QPoint const & pos) {
 	return Point3f(x,y,z);
 }
 
-void GLWidget::paintGL() {
+void GLWidgetEx2::paintGL() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPointSize(pointSize);
+	glPointSize(2);
 	glLoadIdentity();
+	glRotatef(270, 1, 0, 0);
 
 	cg2::Vec3f c = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
 	glTranslatef(-c.x,-c.y,-c.z);
 	pointCloud.draw(cg2::Color(0.8,0.5,0.0));
-
-	glPointSize(pointSize*4.0);
-	glBegin(GL_POINTS);
-	glColor3f(1.0,0.0,0.0);
-	glVertex3f(selection.x,selection.y,selection.z);
-	glEnd();
 
 	swapBuffers();
 }
@@ -142,8 +127,8 @@ void GLWidget::paintGL() {
 
 
 // mouse motion
-void GLWidget::mouseMoveEvent(QMouseEvent * event) {
-	if (lbutton && event->buttons() != Qt::NoButton) {
+void GLWidgetEx2::mouseMoveEvent(QMouseEvent * event) {
+	if (event->buttons() != Qt::NoButton) {
 		angle += event->x() - old_x;
 		//int motionY = event->y() - old_y;
 		//mouseMotion(motionX, motionY);
@@ -157,26 +142,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event) {
 }
 
 // mouse callback
-void GLWidget::mousePressEvent(QMouseEvent * event) {
+void GLWidgetEx2::mousePressEvent(QMouseEvent * event) {
 	if (event->button() != Qt::NoButton) {
-		cg2::Point3f newSelection = unProject(event->pos());
-		if (qIsNaN(newSelection.x)) {
-			old_x = event->x();
-			old_y = event->y();
-			lbutton = true;
-			cerr << "nan" << endl;
-		}
-		else {
-			cerr << "not nan" << endl;
-			selection = newSelection;
-		}
+		old_x = event->x();
+		old_y = event->y();
 
-		update();
-	}
-}
-
-void GLWidget::mouseReleaseEvent(QMouseEvent * event) {
-	if (event->button() != Qt::NoButton) {
-		lbutton = false;
+		updateGL();
 	}
 }

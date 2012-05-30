@@ -77,9 +77,9 @@ cg2ex1 {
 
 cg2ex2 {
 	TARGET = cg2ex2
-	HEADERS += src/cg2ex2/MainWindow.h \
-			   src/cg2ex2/glwidget.h
-	SOURCES += src/cg2ex2/MainWindow.cpp \
-			   src/cg2ex2/main.cpp \
-			   src/cg2ex2/glwidget.cpp
+	HEADERS += src/cg2ex2/mainwindowex2.h \
+			   src/cg2ex2/glwidgetex2.h
+	SOURCES += src/cg2ex2/mainwindowex2.cpp \
+			   src/cg2ex2/mainex2.cpp \
+			   src/cg2ex2/glwidgetex2.cpp
 }
