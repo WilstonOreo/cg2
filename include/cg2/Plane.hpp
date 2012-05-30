@@ -16,6 +16,7 @@ namespace cg2 {
 
 		bool intersect(Ray & ray);
 		Vec3f normal(const Vec3f & iPoint) {
+			Q_UNUSED(iPoint);
 			return _n;
 		}
 

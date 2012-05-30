@@ -54,13 +54,16 @@ namespace cg2 {
 			void draw(Color const & color = Color()) const;
 
 			Vec3f normal(const Ray & ray) const {
+				Q_UNUSED(ray);
 				return Vec3f();
 			}
 			TexCoords texCoords(const Ray & ray) const {
+				Q_UNUSED(ray);
 				return TexCoords();
 			}
 
 			bool intersect(Ray & ray) const {
+				Q_UNUSED(ray);
 				return false;
 			}
 

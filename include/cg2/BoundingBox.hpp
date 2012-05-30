@@ -18,9 +18,11 @@ namespace cg2 {
 		void split(float splitPos, Axis const & axis, BoundingBox & boxLeft, BoundingBox & boxRight) const;
 
 		Vec3f normal(const Ray & ray) const {
+			Q_UNUSED(ray);
 			return Vec3f();
 		}
 		TexCoords texCoords(const Ray & ray) const {
+			Q_UNUSED(ray);
 			return TexCoords();
 		}
 

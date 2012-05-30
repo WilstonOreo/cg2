@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QtGlobal>
+
 #include "cg2/Ray.hpp"
 #include "cg2/Image.hpp"
 
@@ -63,6 +65,7 @@ namespace cg2 {
 		}
 
 		void init(string filename, Scene * _scene) {
+			Q_UNUSED(_scene);
 			tex.init(filename);
 		}
 

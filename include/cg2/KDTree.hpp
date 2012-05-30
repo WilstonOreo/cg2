@@ -71,7 +71,7 @@ namespace cg2 {
 				}
 			}
 
-			void build(vector<T> & objs, BoundingBox & boundingBox) {
+			void build(vector<T> const & objs, BoundingBox & boundingBox) {
 				clear();
 				root = new Node;
 				root->objs.reserve(objs.size());
