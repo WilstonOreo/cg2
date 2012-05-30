@@ -24,12 +24,19 @@ void MainWindowEx2::setupUi() {
 	uiRenderKDTree = new QCheckBox("Render KDTree");
 	layout->addWidget(uiRenderKDTree, 0, 0, 1, 2);
 
-	uiPointSizeLabel = new QLabel("Point size");
-	layout->addWidget(uiPointSizeLabel, 1, 0);
+	uiPointSizeSourceLabel = new QLabel("Point size");
+	layout->addWidget(uiPointSizeSourceLabel, 1, 0);
 
-	uiPointSize = new QDoubleSpinBox();
-	uiPointSize->setSingleStep(0.2);
-	layout->addWidget(uiPointSize, 1, 1);
+	uiPointSizeSource = new QDoubleSpinBox();
+	uiPointSizeSource->setSingleStep(0.2);
+	layout->addWidget(uiPointSizeSource, 1, 1);
+
+	uiPointSizeGridLabel = new QLabel("Grid Point size");
+	layout->addWidget(uiPointSizeGridLabel, 2, 0);
+
+	uiPointSizeGrid = new QDoubleSpinBox();
+	uiPointSizeGrid->setSingleStep(0.2);
+	layout->addWidget(uiPointSizeGrid, 2, 1);
 
 	uiRenderSettings = new QDockWidget();
 
@@ -43,10 +50,12 @@ void MainWindowEx2::setupUi() {
 MainWindowEx2::MainWindowEx2(QMainWindow * parent) : QMainWindow(parent) {
 	setupUi();
 
-	connect(uiPointSize,SIGNAL(valueChanged(double)), glWidget, SLOT(setPointSize(double)));
+	connect(uiPointSizeSource,SIGNAL(valueChanged(double)), glWidget, SLOT(setPointSizeSource(double)));
+	connect(uiPointSizeGrid,SIGNAL(valueChanged(double)), glWidget, SLOT(setPointSizeGrid(double)));
 	connect(uiRenderKDTree,SIGNAL(stateChanged(int)), glWidget, SLOT(setDrawKDTree(int)));
 
-	uiPointSize->setValue(2);
+	uiPointSizeSource->setValue(2);
+	uiPointSizeGrid->setValue(1);
 }
 
 MainWindowEx2::~MainWindowEx2() {

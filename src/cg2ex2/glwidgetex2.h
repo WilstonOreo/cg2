@@ -22,16 +22,19 @@ class GLWidgetEx2 : public QGLWidget {
 		virtual void paintGL();
 
 	private:
-		float pointSize;
+		float pointSizeSource;
+		float pointSizeGrid;
+
 		// some stateholders for mouse motion
 		// last mouse position in window
 		int old_x, old_y;
-		float angle;
+		float yaw, pitch;
 
 	signals:
 
 	public slots:
-		void setPointSize(double size);
+		void setPointSizeSource(double size);
+		void setPointSizeGrid(double size);
 		void setDrawKDTree(int state);
 };
 

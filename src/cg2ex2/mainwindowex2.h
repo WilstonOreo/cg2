@@ -9,8 +9,10 @@ class MainWindowEx2 : public QMainWindow {
 		class GLWidgetEx2 * glWidget;
 		class QDockWidget * uiRenderSettings;
 		class QCheckBox * uiRenderKDTree;
-		class QDoubleSpinBox * uiPointSize;
-		class QLabel * uiPointSizeLabel;
+		class QDoubleSpinBox * uiPointSizeSource;
+		class QLabel * uiPointSizeSourceLabel;
+		class QDoubleSpinBox * uiPointSizeGrid;
+		class QLabel * uiPointSizeGridLabel;
 
 	public:
 		MainWindowEx2(QMainWindow * parent = 0);

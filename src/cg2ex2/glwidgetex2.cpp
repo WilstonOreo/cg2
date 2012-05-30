@@ -14,8 +14,13 @@ GLWidgetEx2::GLWidgetEx2(QWidget * parent) :
 	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent) {
 }
 
-void GLWidgetEx2::setPointSize(double size) {
-	pointSize = size;
+void GLWidgetEx2::setPointSizeSource(double size) {
+	pointSizeSource = size;
+	updateGL();
+}
+
+void GLWidgetEx2::setPointSizeGrid(double size) {
+	pointSizeGrid = size;
 	updateGL();
 }
 
@@ -72,11 +77,11 @@ void GLWidgetEx2::resizeGL(int w, int h) {
 	GLdouble centerZ= 0;
 	// set camera parameters
 	GLdouble eyeX=0;
-	GLdouble eyeY=pointCloud.boundingBox().size().y*1.5;
-	GLdouble eyeZ=-pointCloud.boundingBox().size().length();
+	GLdouble eyeY=-1.5*pointCloud.boundingBox().size().length();
+	GLdouble eyeZ=0;
 	GLdouble upX=0;
-	GLdouble upY=1;
-	GLdouble upZ=0;
+	GLdouble upY=0;
+	GLdouble upZ=1;
 
 	gluLookAt(eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ);
 
@@ -117,16 +122,20 @@ Point3f unProject(QPoint const & pos) {
 void GLWidgetEx2::paintGL() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPointSize(pointSize);
 	glLoadIdentity();
-	glRotatef(270, 1, 0, 0);
-	glRotatef(angle, 0, 0, 1);
+	glRotatef(pitch, 1, 0, 0);
+	glRotatef(yaw, 0, 0, 1);
 
-	cg2::Vec3f camera = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
-	glTranslatef(-camera.x,-camera.y,-camera.z);
-	if (pointSize) pointCloud.draw(cg2::Color(0.8,0.5,0.0));
-	glPointSize(1);
-	pointGrid.draw(cg2::Color(0.0,0.5,1.0));
+	cg2::Vec3f center = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
+	glTranslatef(-center.x,-center.y,-center.z);
+	if (pointSizeSource) {
+		glPointSize(pointSizeSource);
+		pointCloud.draw(cg2::Color(0.8,0.5,0.0));
+	}
+	if (pointSizeGrid) {
+		glPointSize(pointSizeGrid);
+		pointGrid.draw(cg2::Color(0.0,0.5,1.0));
+	}
 }
 
 
@@ -134,7 +143,10 @@ void GLWidgetEx2::paintGL() {
 // mouse motion
 void GLWidgetEx2::mouseMoveEvent(QMouseEvent * event) {
 	if (event->buttons() != Qt::NoButton) {
-		angle += event->x() - old_x;
+		yaw += event->x() - old_x;
+		pitch += event->y() - old_y;
+		if (pitch > 90) pitch = 90;
+		if (pitch < -90) pitch = -90;
 		updateGL();
 
 		old_x = event->x();
