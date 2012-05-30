@@ -113,9 +113,10 @@ Point3f unProject(QPoint const & pos) {
 void GLWidgetEx2::paintGL() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPointSize(2);
+	glPointSize(pointSize);
 	glLoadIdentity();
 	glRotatef(270, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
 
 	cg2::Vec3f c = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
 	glTranslatef(-c.x,-c.y,-c.z);

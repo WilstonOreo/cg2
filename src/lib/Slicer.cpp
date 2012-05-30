@@ -2,6 +2,7 @@
 
 namespace cg2 {
 	Slices Slicer::slice(SceneObject & obj, unsigned nSlices) {
+		Q_UNUSED(obj);
 
 		Slices slices;
 		slices.resize(nSlices);
@@ -14,6 +15,8 @@ namespace cg2 {
 	}
 
 	Slice Slicer::generateSlice(SceneObject & obj, unsigned sliceIdx) {
+		Q_UNUSED(obj);
+		Q_UNUSED(sliceIdx);
 		return Slice();
 	}
 	/*    Slice slice;

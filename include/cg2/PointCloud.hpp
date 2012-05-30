@@ -75,9 +75,9 @@ namespace cg2 {
 			set<Vertex const *> selection;
 
 			TBD_DECLARE_PROPERTY(bool,drawKDTree);
-			TBD_DECLARE_PROPERTY_REF(Color,kdTreeColor);
+			TBD_DECLARE_PROPERTY(Color,kdTreeColor);
 			TBD_DECLARE_PROPERTY(bool,drawBoundingBox);
-			TBD_DECLARE_PROPERTY_REF(Color,boundingBoxColor);
+			TBD_DECLARE_PROPERTY(Color,boundingBoxColor);
 
 			TBD_DECLARE_PROPERTY(bool,highlightSelection);
 			TBD_DECLARE_PROPERTY(Color,selectionColor);

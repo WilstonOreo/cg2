@@ -38,6 +38,7 @@ namespace cg2 {
 	}
 
 	Ray Ray::refract(float index) {
+		Q_UNUSED(index);
 		/*
 		    tmax += 0.01;
 		    Vec3f iPoint = getIntersectionPoint();

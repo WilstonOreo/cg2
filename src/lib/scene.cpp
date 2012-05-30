@@ -6,6 +6,8 @@
 
 namespace cg2 {
 	Vec3f Scene::traceRay(Ray & ray, SceneObject * curObj) {
+		Q_UNUSED(ray);
+		Q_UNUSED(curObj);
 		/*
 		    vector<Object*>::iterator objIt;
 

@@ -17,10 +17,13 @@ namespace cg2 {
 
 			Vec3f normal(const Ray & ray);
 			TexCoords texCoords(const Ray & ray) {
+				Q_UNUSED(ray);
 				return TexCoords();
 			}
 
-			void draw(Color color = Color()) {}
+			void draw(Color color = Color()) {
+				Q_UNUSED(color);
+			}
 
 		private:
 			void build(Vertex * _v0, Vertex * _v1, Vertex * _v2);
