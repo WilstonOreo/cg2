@@ -211,9 +211,6 @@ void GLWidgetEx2::paintGL() {
 		break;
 
 	case 2:
-		GLUquadric * foo = gluNewQuadric();
-		gluSphere(foo,1,20,20);
-		gluDeleteQuadric(foo);
 		glEnable(GL_LIGHTING);
 		glPolygonMode(GL_BACK, GL_LINE);
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -227,6 +224,13 @@ void GLWidgetEx2::paintGL() {
 		glEnable(GL_CULL_FACE);
 
 		pointGridCasteljau.drawSurface(Color(0.25,0.25,0.25));
+		break;
+
+	case 3:
+		if (pointSizeGridCasteljau) {
+			glPointSize(pointSizeGridCasteljau);
+			pointGridCasteljau.draw(cg2::Color(0.0,0.5,1.0));
+		}
 		break;
 	}
 }

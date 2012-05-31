@@ -11,7 +11,7 @@ class MainWindowEx2 : public QMainWindow {
 		class QDockWidget * uiRenderSettings;
 
 		class QCheckBox * uiRenderKDTree;
-		class QRadioButton * uiRenderMode[3];
+		class QRadioButton * uiRenderMode[4];
 
 		class QDoubleSpinBox * uiPointSizeSource;
 		class QLabel * uiPointSizeSourceLabel;

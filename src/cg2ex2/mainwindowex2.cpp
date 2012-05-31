@@ -67,6 +67,8 @@ void MainWindowEx2::setupUi() {
 	layout->addWidget(uiRenderMode[1], 7, 0, 1, 2);
 	uiRenderMode[2] = new QRadioButton("Render with de Casteljau");
 	layout->addWidget(uiRenderMode[2], 8, 0, 1, 2);
+	uiRenderMode[3] = new QRadioButton("Render de Casteljau points");
+	layout->addWidget(uiRenderMode[3], 9, 0, 1, 2);
 
 	uiRenderSettings = new QDockWidget();
 
@@ -87,7 +89,7 @@ MainWindowEx2::MainWindowEx2(QMainWindow * parent) : QMainWindow(parent) {
 	connect(uiGridSizeCasteljau,SIGNAL(valueChanged(int)), glWidget, SLOT(setGridSizeCasteljau(int)));
 	connect(uiRenderKDTree,SIGNAL(stateChanged(int)), glWidget, SLOT(setDrawKDTree(int)));
 	QSignalMapper * qsm = new QSignalMapper(this);
-	for (int i = 0; i < 3; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		qsm->setMapping(uiRenderMode[i], i);
 		connect(uiRenderMode[i],SIGNAL(clicked()), qsm, SLOT(map()));
 	}
@@ -101,6 +103,6 @@ MainWindowEx2::MainWindowEx2(QMainWindow * parent) : QMainWindow(parent) {
 	uiPointSizeGridCasteljau->setValue(1);
 	uiGridSizeCasteljau->setValue(25);
 
-	uiRenderMode[1]->setChecked(true);
+	uiRenderMode[1]->click();
 }
 
