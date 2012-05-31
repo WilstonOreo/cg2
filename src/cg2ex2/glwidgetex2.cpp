@@ -86,14 +86,13 @@ void GLWidgetEx2::initializeGL() {
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
 	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
-	//glShadeModel(GL_SMOOTH);
+	glShadeModel(GL_SMOOTH);
 	glEnable(GL_LIGHT1);
 	//glEnable(GL_NORMALIZE);
 
 	// fix outlines z-fighting withthe quads
 	glPolygonOffset(1, 1);
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonMode(GL_BACK, GL_LINE);
 	glClearColor(0.0,0.0,0.0,1.0);
 }
 
@@ -178,12 +177,18 @@ void GLWidgetEx2::paintGL() {
 	}
 	else {
 		glEnable(GL_LIGHTING);
+		glPolygonMode(GL_BACK, GL_LINE);
 		glPolygonMode(GL_FRONT, GL_FILL);
-		pointGrid.drawSurface();
+		glDisable(GL_CULL_FACE);
+
+		pointGrid.drawSurface(Color(1,1,1));
+
 		glDisable(GL_LIGHTING);
 		glPolygonMode(GL_FRONT, GL_LINE);
-		glColor3f(0.25,0.25,0.25);
-		pointGrid.drawSurface();
+		glColor4f(0,0,0,0.125);
+		glEnable(GL_CULL_FACE);
+
+		pointGrid.drawSurface(Color(0.25,0.25,0.25));
 	}
 
 	/*GLUquadric * foo = gluNewQuadric();

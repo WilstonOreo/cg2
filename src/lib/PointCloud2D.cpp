@@ -171,7 +171,12 @@ namespace cg2 {
 				Point3f v00 = v.v;
 				Point3f v01 = (xp+1 < width_) ? vertices[(xp+1)*height_+yp].v : v00;
 				Point3f v10 = (yp+1 < height_) ? vertices[xp*height_+yp+1].v : v00;
-				v.n = (v01 - v00).cross(v10-v00).normalized();
+				Point3f v0n = xp>0 ? vertices[(xp-1)*height_+yp].v : v00;
+				Point3f vn0 = yp>0 ? vertices[xp*height_+yp-1].v : v00;
+				v.n = (
+					(v01 - v00).cross(v10-v00).normalized() +
+					(v00 - v0n).cross(v00-vn0).normalized()
+				).normalized();
 			}
 		}
 
@@ -179,46 +184,22 @@ namespace cg2 {
 	}
 
 	void PointCloud2D::drawSurface(Color const & color) {
-
-		BoundingBox const box = boundingBox();
-		float const xdist = box.size().x / (width_-1), ydist = box.size().y / (height_-1);
-		float const xmin = box.min.x, ymin = box.min.y;
-
 		for (unsigned x = 0; x+1 < width_; x++) {
 			for (unsigned y = 0; y+1 < height_; y++) {
-				float posx = xmin+x*xdist, posy = ymin+y*ydist;
-
 				const Vertex & v00 = vertices[x*height_+y];
 				const Vertex & v10 = (x < (width_-1)) ? vertices[(x+1)*height_+y] : v00;
 				const Vertex & v01 = (y < (height_-1)) ? vertices[x*height_+y+1] : v00;
-				Vertex v11;
+				const Vertex & v11 = vertices[(x+1)*height_+y+1];
 
-				if (x+1 < (width_)) {
-					if (y+1 < (height_)) {
-						v11 = vertices[(x+1)*height_+y+1].v;
-					}
-					else {
-						v11 = v10;
-					}
-				}
-				else {
-					if (y+1 < (height_)) {
-						v11 = v01;
-					}
-					else {
-						v11 = v00;
-					}
-				}
-
-				//   glColor3f(1.0,0.0,0.0); //color.x,color.y,color.z);
+				//glColor3f(color.x,color.y,color.z);
 				glBegin(GL_TRIANGLE_STRIP);
 				glNormal3f(v00.n.x,v00.n.y,v00.n.z);
 				glVertex3f(v00.v.x,v00.v.y,v00.v.z);
-				//glNormal3f(v10.n.x,v10.n.y,v10.n.z);
+				glNormal3f(v10.n.x,v10.n.y,v10.n.z);
 				glVertex3f(v10.v.x,v10.v.y,v10.v.z);
-				//glNormal3f(v01.n.x,v01.n.y,v01.n.z);
+				glNormal3f(v01.n.x,v01.n.y,v01.n.z);
 				glVertex3f(v01.v.x,v01.v.y,v01.v.z);
-				//glNormal3f(v11.n.x,v11.n.y,v11.n.z);
+				glNormal3f(v11.n.x,v11.n.y,v11.n.z);
 				glVertex3f(v11.v.x,v11.v.y,v11.v.z);
 				glEnd();
 
