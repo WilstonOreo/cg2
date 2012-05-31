@@ -24,8 +24,7 @@ namespace cg2 {
 
 	class PointCloud2D : public PointCloud {
 		public:
-			PointCloud2D() {}
-			PointCloud2D(PointCloud const & in, int _width, int _height);
+			PointCloud2D() : width_(1), height_(1) {}
 
 			void generateGrid(PointCloud const & in);
 			void update();

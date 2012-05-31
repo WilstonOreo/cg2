@@ -62,9 +62,9 @@ MainWindowEx2::MainWindowEx2(QMainWindow * parent) : QMainWindow(parent) {
 	connect(uiGridSize,SIGNAL(valueChanged(int)), glWidget, SLOT(setGridSize(int)));
 	connect(uiRenderKDTree,SIGNAL(stateChanged(int)), glWidget, SLOT(setDrawKDTree(int)));
 
+	uiGridSize->setValue(25);
 	uiPointSizeSource->setValue(2);
 	uiPointSizeGrid->setValue(1);
-	uiGridSize->setValue(25);
 }
 
 MainWindowEx2::~MainWindowEx2() {

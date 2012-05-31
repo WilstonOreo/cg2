@@ -62,14 +62,35 @@ void GLWidgetEx2::initializeGL() {
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_CULL_FACE);
+
+	// light and material
+	//glEnable(GL_COLOR_MATERIAL);
+	//GLfloat mat_ambient[] = {0.5, 0.5, 0.5, 1.0};
+	//GLfloat mat_specular[] = {0.6, 0.6, 0.6, 1.0};
+	//GLfloat mat_shininess[] = { 3.0 };
+	GLfloat LightAmbient[]= { 0.5f, 0.5f, 0.5f, 1.0f };
+	GLfloat LightDiffuse[]= { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat model_ambient[] = { 0.3, 0.3, 0.3 };
+	GLfloat light_position[] = { 0.0, 0.0, 2.0, 1.0 };
+	/*glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);*/
+	glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
+	//glShadeModel(GL_SMOOTH);
 	glEnable(GL_LIGHTING);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_LIGHT1);
+	//glEnable(GL_NORMALIZE);
 
 	// fix outlines z-fighting withthe quads
-	glPolygonOffset(1, 1);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+	//glPolygonOffset(1, 1);
+	//glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonMode(GL_BACK, GL_LINE);
+	glClearColor(0.0,0.0,0.0,1.0);
 }
 
 void GLWidgetEx2::resizeGL(int w, int h) {
@@ -100,10 +121,6 @@ void GLWidgetEx2::resizeGL(int w, int h) {
 	GLdouble upZ=1;
 
 	gluLookAt(eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ);
-
-	// clear background and depth buffer
-	glClearColor(0.0,0.0,0.0,1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -138,22 +155,7 @@ Point3f unProject(QPoint const & pos) {
 void GLWidgetEx2::paintGL() {
 	cg2::Vec3f center = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
 
-	// light and material
-	glEnable(GL_COLOR_MATERIAL);
-	GLfloat mat_ambient[] = {0.5, 0.5, 0.5, 1.0};
-	GLfloat mat_specular[] = {0.6, 0.6, 0.6, 1.0};
-	GLfloat mat_shininess[] = { 3.0 };
-	GLfloat model_ambient[] = { 0.3, 0.3, 0.3 };
-	GLfloat light_position[] = { 5.0, 5.0, 5.0, 0.0 };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_NORMALIZE);
 
 	glLoadIdentity();
 	glRotatef(pitch, 1, 0, 0);
@@ -175,6 +177,10 @@ void GLWidgetEx2::paintGL() {
 		pointGrid.draw(cg2::Color(0.0,0.5,1.0));
 	}
 	*/
+
+	/*GLUquadric * foo = gluNewQuadric();
+	gluSphere(foo,1,20,20);
+	gluDeleteQuadric(foo);*/
 }
 
 

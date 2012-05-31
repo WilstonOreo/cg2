@@ -126,17 +126,13 @@ namespace cg2 {
 		return std::pow(1-d/h, 4)*(4*d/h+1);
 	}
 
-	PointCloud2D::PointCloud2D(PointCloud const & in, int _width, int _height)
-		: width_(_width), height_(_height) {
-		generateGrid(in);
-	}
-
 	void PointCloud2D::generateGrid(PointCloud const & in) {
 		BoundingBox box = in.boundingBox();
 		float const xdist = box.size().x / width_, ydist = box.size().y / height_;
 		float const xmin = box.min.x, ymin = box.min.y;
-		float const radius = sqrt(xdist*xdist + ydist*ydist)*2;
+		float const radius = max(sqrt(xdist*xdist + ydist*ydist)*2, 0.08f);
 		vertices.clear();
+		cerr << "width=" << width_ << ", height=" << height_ << endl;
 		vertices.reserve(width_*height_);
 
 		for (unsigned xp = 0; xp < width_; xp++) {
@@ -173,8 +169,8 @@ namespace cg2 {
 			for (unsigned yp = 0; yp < height_; yp++) {
 				Vertex & v = vertices[xp*height_+yp];
 				Point3f v00 = v.v;
-				Point3f v01 = (xp < width_-1) ? vertices[(xp+1)*height_+yp].v : v00;
-				Point3f v10 = (yp < height_-1) ? vertices[xp*height_+yp+1].v : v00;
+				Point3f v01 = (xp+1 < width_) ? vertices[(xp+1)*height_+yp].v : v00;
+				Point3f v10 = (yp+1 < height_) ? vertices[xp*height_+yp+1].v : v00;
 				v.n = (v01 - v00).cross(v10-v00).normalized();
 			}
 		}
@@ -192,20 +188,37 @@ namespace cg2 {
 			for (unsigned y = 0; y < height_; y++) {
 				float posx = xmin+x*xdist, posy = ymin+y*ydist;
 
-				const Vertex & v00 = vertices[x*height_+y].v;
-				const Vertex & v10 = (x < (width_-1)) ? vertices[(x+1)*height_+y].v : v00;
-				const Vertex & v01 = (y < (width_-1)) ? vertices[x*height_+y+1].v   : v00;
-				const Vertex & v11 = (x < (height_-1) && y < (width_-1)) ? vertices[(x+1)*height_+y+1].v : v01;
+				const Vertex & v00 = vertices[x*height_+y];
+				const Vertex & v10 = (x < (width_-1)) ? vertices[(x+1)*height_+y] : v00;
+				const Vertex & v01 = (y < (height_-1)) ? vertices[x*height_+y+1]   : v00;
+				Vertex v11;
+
+				if (x+1 < (width_)) {
+					if (y+1 < (height_)) {
+						v11 = vertices[(x+1)*height_+y+1].v;
+					}
+					else {
+						v11 = v10;
+					}
+				}
+				else {
+					if (y+1 < (height_)) {
+						v11 = v01;
+					}
+					else {
+						v11 = v00;
+					}
+				}
 
 				//   glColor3f(1.0,0.0,0.0); //color.x,color.y,color.z);
 				glBegin(GL_TRIANGLE_STRIP);
 				glNormal3f(v00.n.x,v00.n.y,v00.n.z);
 				glVertex3f(posx,posy,v00.v.z);
-				glNormal3f(v10.n.x,v10.n.y,v10.n.z);
+				//glNormal3f(v10.n.x,v10.n.y,v10.n.z);
 				glVertex3f(posx+xdist,posy,v10.v.z);
-				glNormal3f(v01.n.x,v01.n.y,v01.n.z);
+				//glNormal3f(v01.n.x,v01.n.y,v01.n.z);
 				glVertex3f(posx,posy+ydist,v01.v.z);
-				glNormal3f(v11.n.x,v11.n.y,v11.n.z);
+				//glNormal3f(v11.n.x,v11.n.y,v11.n.z);
 				glVertex3f(posx+xdist,posy+ydist,v11.v.z);
 				glEnd();
 
