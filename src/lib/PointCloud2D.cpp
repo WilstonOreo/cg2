@@ -184,6 +184,7 @@ namespace cg2 {
 	}
 
 	void PointCloud2D::drawSurface(Color const & color) {
+		glBegin(GL_QUADS);
 		for (unsigned x = 0; x+1 < width_; x++) {
 			for (unsigned y = 0; y+1 < height_; y++) {
 				const Vertex & v00 = vertices[x*height_+y];
@@ -192,21 +193,17 @@ namespace cg2 {
 				const Vertex & v11 = vertices[(x+1)*height_+y+1];
 
 				//glColor3f(color.x,color.y,color.z);
-				glBegin(GL_TRIANGLE_STRIP);
 				glNormal3f(v00.n.x,v00.n.y,v00.n.z);
 				glVertex3f(v00.v.x,v00.v.y,v00.v.z);
 				glNormal3f(v10.n.x,v10.n.y,v10.n.z);
 				glVertex3f(v10.v.x,v10.v.y,v10.v.z);
-				glNormal3f(v01.n.x,v01.n.y,v01.n.z);
-				glVertex3f(v01.v.x,v01.v.y,v01.v.z);
 				glNormal3f(v11.n.x,v11.n.y,v11.n.z);
 				glVertex3f(v11.v.x,v11.v.y,v11.v.z);
-				glEnd();
-
+				glNormal3f(v01.n.x,v01.n.y,v01.n.z);
+				glVertex3f(v01.v.x,v01.v.y,v01.v.z);
 			}
-
 		}
-
+		glEnd();
 	}
 
 
