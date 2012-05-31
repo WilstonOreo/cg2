@@ -12,7 +12,7 @@ class GLWidgetEx2 : public QGLWidget {
 		explicit GLWidgetEx2(QWidget * parent = 0);
 
 		cg2::PointCloud2D pointCloud;
-		cg2::PointCloud pointGrid;
+		cg2::PointCloud2D pointGrid;
 
 		void mouseMoveEvent(QMouseEvent * event);
 		void mousePressEvent(QMouseEvent * event);

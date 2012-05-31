@@ -37,8 +37,13 @@ void GLWidgetEx2::setDrawKDTree(int state) {
 
 void GLWidgetEx2::recalc() {
 	pointCloud.read("franke4.off");
-	void makeGrid(PointCloud & out, PointCloud const & in, int gridSize);
-	makeGrid(pointGrid, pointCloud, gridSize);
+	//void makeGrid(PointCloud & out, PointCloud const & in, int gridSize);
+
+	pointGrid.width(gridSize);
+	pointGrid.height(gridSize);
+	pointGrid.generateGrid(pointCloud);
+
+	//makeGrid(pointGrid, pointCloud, gridSize);
 }
 
 void GLWidgetEx2::initializeGL() {
@@ -46,7 +51,7 @@ void GLWidgetEx2::initializeGL() {
 	// Set up the rendering context, define display lists etc.:
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LEQUAL);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -57,11 +62,13 @@ void GLWidgetEx2::initializeGL() {
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
+	glEnable(GL_LIGHTING);
 	glEnable(GL_CULL_FACE);
 
 	// fix outlines z-fighting withthe quads
 	glPolygonOffset(1, 1);
 	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 }
 
@@ -129,14 +136,36 @@ Point3f unProject(QPoint const & pos) {
 }
 
 void GLWidgetEx2::paintGL() {
+	cg2::Vec3f center = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
+
+	// light and material
+	glEnable(GL_COLOR_MATERIAL);
+	GLfloat mat_ambient[] = {0.5, 0.5, 0.5, 1.0};
+	GLfloat mat_specular[] = {0.6, 0.6, 0.6, 1.0};
+	GLfloat mat_shininess[] = { 3.0 };
+	GLfloat model_ambient[] = { 0.3, 0.3, 0.3 };
+	GLfloat light_position[] = { 5.0, 5.0, 5.0, 0.0 };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_NORMALIZE);
 
 	glLoadIdentity();
 	glRotatef(pitch, 1, 0, 0);
 	glRotatef(yaw, 0, 0, 1);
-
-	cg2::Vec3f center = 0.5*(pointCloud.boundingBox().max.vec3f() + pointCloud.boundingBox().min.vec3f());
 	glTranslatef(-center.x,-center.y,-center.z);
+
+	pointGrid.drawSurface();
+	/*
+	glDisable(GL_COLOR_MATERIAL);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
+
 	if (pointSizeSource) {
 		glPointSize(pointSizeSource);
 		pointCloud.draw(cg2::Color(0.8,0.5,0.0));
@@ -145,6 +174,7 @@ void GLWidgetEx2::paintGL() {
 		glPointSize(pointSizeGrid);
 		pointGrid.draw(cg2::Color(0.0,0.5,1.0));
 	}
+	*/
 }
 
 
@@ -154,8 +184,12 @@ void GLWidgetEx2::mouseMoveEvent(QMouseEvent * event) {
 	if (event->buttons() != Qt::NoButton) {
 		yaw += event->x() - old_x;
 		pitch += event->y() - old_y;
-		if (pitch > 90) pitch = 90;
-		if (pitch < -90) pitch = -90;
+		if (pitch > 90) {
+			pitch = 90;
+		}
+		if (pitch < -90) {
+			pitch = -90;
+		}
 		updateGL();
 
 		old_x = event->x();
@@ -203,15 +237,15 @@ void makeGrid(PointCloud & out, PointCloud const & in, int gridSize) {
 			int nPoints = 0;
 			double sumWeight = 0;
 			double currentZ = 0;
-			foreach (Vertex const * v, in.collectInRadius(currentXY, radius)) {
+			foreach(Vertex const * v, in.collectInRadius(currentXY, radius)) {
 				Point3f const & p = v->v;
 				Point3f pFlat(p);
 				pFlat.z = 0;
 
-				double distance = (currentXY-pFlat).length(); // Distanz zwischen P und (x,y,0)
 				if ((currentXY-p).length() > radius) {
 					std::cout << "point exceeds radius: " << (currentXY-p).length() << std::endl;
 				}
+				double distance = (currentXY-pFlat).length(); // Distanz zwischen P und (x,y,0)
 				double weight = wendland(distance, radius);
 
 				sumWeight += weight;
@@ -221,15 +255,15 @@ void makeGrid(PointCloud & out, PointCloud const & in, int gridSize) {
 			}
 			if (nPoints && sumWeight) {
 				/*std::cout
-						<< "nPoints=" << nPoints
-						<< " sumWeight=" << sumWeight
-						<< " currentZ=" << currentZ;*/
+				        << "nPoints=" << nPoints
+				        << " sumWeight=" << sumWeight
+				        << " currentZ=" << currentZ;*/
 
 				//current /= nPoints;
 				currentZ /= sumWeight;
 				/*std::cout
-						<< " after=" << currentZ
-						<< std::endl;*/
+				        << " after=" << currentZ
+				        << std::endl;*/
 			}
 
 			//grid[y*width+x] = current;

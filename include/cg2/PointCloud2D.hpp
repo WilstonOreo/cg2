@@ -24,13 +24,23 @@ namespace cg2 {
 
 	class PointCloud2D : public PointCloud {
 		public:
+			PointCloud2D() {}
+			PointCloud2D(PointCloud const & in, int _width, int _height);
+
+			void generateGrid(PointCloud const & in);
 			void update();
 			set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
 			set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;
 			set<Vertex const *> selection;
 
+			void drawSurface(Color const & color = Color());
+
+			TBD_DECLARE_PROPERTY(unsigned,width);
+			TBD_DECLARE_PROPERTY(unsigned,height);
 		private:
 			PointKDTree2D kdTree;
 	};
+
+
 }
 #endif // POINTCLOUD2D_H
