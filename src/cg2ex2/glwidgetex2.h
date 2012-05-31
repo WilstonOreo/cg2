@@ -28,6 +28,7 @@ class GLWidgetEx2 : public QGLWidget {
 		float pointSizeSource;
 		float pointSizeGrid;
 		int gridSize;
+		bool renderPoints;
 
 		// some stateholders for mouse motion
 		// last mouse position in window
@@ -41,6 +42,7 @@ class GLWidgetEx2 : public QGLWidget {
 		void setPointSizeGrid(double size);
 		void setGridSize(int size);
 		void setDrawKDTree(int state);
+		void setRenderMode(int state);
 };
 
 #endif // GLWIDGET_H

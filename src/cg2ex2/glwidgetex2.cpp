@@ -35,6 +35,11 @@ void GLWidgetEx2::setDrawKDTree(int state) {
 	updateGL();
 }
 
+void GLWidgetEx2::setRenderMode(int state) {
+	renderPoints = state != Qt::Unchecked;
+	updateGL();
+}
+
 void GLWidgetEx2::recalc() {
 	pointCloud.read("franke4.off");
 	//void makeGrid(PointCloud & out, PointCloud const & in, int gridSize);
@@ -82,13 +87,12 @@ void GLWidgetEx2::initializeGL() {
 	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
 	//glShadeModel(GL_SMOOTH);
-	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT1);
 	//glEnable(GL_NORMALIZE);
 
 	// fix outlines z-fighting withthe quads
-	//glPolygonOffset(1, 1);
-	//glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1, 1);
+	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonMode(GL_BACK, GL_LINE);
 	glClearColor(0.0,0.0,0.0,1.0);
 }
@@ -162,21 +166,25 @@ void GLWidgetEx2::paintGL() {
 	glRotatef(yaw, 0, 0, 1);
 	glTranslatef(-center.x,-center.y,-center.z);
 
-	pointGrid.drawSurface();
-	/*
-	glDisable(GL_COLOR_MATERIAL);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
-
 	if (pointSizeSource) {
 		glPointSize(pointSizeSource);
 		pointCloud.draw(cg2::Color(0.8,0.5,0.0));
 	}
-	if (pointSizeGrid) {
-		glPointSize(pointSizeGrid);
-		pointGrid.draw(cg2::Color(0.0,0.5,1.0));
+	if (renderPoints) {
+		if (pointSizeGrid) {
+			glPointSize(pointSizeGrid);
+			pointGrid.draw(cg2::Color(0.0,0.5,1.0));
+		}
 	}
-	*/
+	else {
+		glEnable(GL_LIGHTING);
+		glPolygonMode(GL_FRONT, GL_FILL);
+		pointGrid.drawSurface();
+		glDisable(GL_LIGHTING);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glColor3f(0.25,0.25,0.25);
+		pointGrid.drawSurface();
+	}
 
 	/*GLUquadric * foo = gluNewQuadric();
 	gluSphere(foo,1,20,20);

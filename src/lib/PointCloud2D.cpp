@@ -128,7 +128,7 @@ namespace cg2 {
 
 	void PointCloud2D::generateGrid(PointCloud const & in) {
 		BoundingBox box = in.boundingBox();
-		float const xdist = box.size().x / width_, ydist = box.size().y / height_;
+		float const xdist = box.size().x / (width_-1), ydist = box.size().y / (height_-1);
 		float const xmin = box.min.x, ymin = box.min.y;
 		float const radius = max(sqrt(xdist*xdist + ydist*ydist)*2, 0.08f);
 		vertices.clear();
@@ -181,16 +181,16 @@ namespace cg2 {
 	void PointCloud2D::drawSurface(Color const & color) {
 
 		BoundingBox const box = boundingBox();
-		float const xdist = box.size().x / width_, ydist = box.size().y / height_;
+		float const xdist = box.size().x / (width_-1), ydist = box.size().y / (height_-1);
 		float const xmin = box.min.x, ymin = box.min.y;
 
-		for (unsigned x = 0; x < width_; x++) {
-			for (unsigned y = 0; y < height_; y++) {
+		for (unsigned x = 0; x+1 < width_; x++) {
+			for (unsigned y = 0; y+1 < height_; y++) {
 				float posx = xmin+x*xdist, posy = ymin+y*ydist;
 
 				const Vertex & v00 = vertices[x*height_+y];
 				const Vertex & v10 = (x < (width_-1)) ? vertices[(x+1)*height_+y] : v00;
-				const Vertex & v01 = (y < (height_-1)) ? vertices[x*height_+y+1]   : v00;
+				const Vertex & v01 = (y < (height_-1)) ? vertices[x*height_+y+1] : v00;
 				Vertex v11;
 
 				if (x+1 < (width_)) {
@@ -213,13 +213,13 @@ namespace cg2 {
 				//   glColor3f(1.0,0.0,0.0); //color.x,color.y,color.z);
 				glBegin(GL_TRIANGLE_STRIP);
 				glNormal3f(v00.n.x,v00.n.y,v00.n.z);
-				glVertex3f(posx,posy,v00.v.z);
+				glVertex3f(v00.v.x,v00.v.y,v00.v.z);
 				//glNormal3f(v10.n.x,v10.n.y,v10.n.z);
-				glVertex3f(posx+xdist,posy,v10.v.z);
+				glVertex3f(v10.v.x,v10.v.y,v10.v.z);
 				//glNormal3f(v01.n.x,v01.n.y,v01.n.z);
-				glVertex3f(posx,posy+ydist,v01.v.z);
+				glVertex3f(v01.v.x,v01.v.y,v01.v.z);
 				//glNormal3f(v11.n.x,v11.n.y,v11.n.z);
-				glVertex3f(posx+xdist,posy+ydist,v11.v.z);
+				glVertex3f(v11.v.x,v11.v.y,v11.v.z);
 				glEnd();
 
 			}
@@ -245,7 +245,4 @@ namespace cg2 {
 		kdTree.collect(kdTree.root,boundingBox(),pointSet);
 		return pointSet.vertexSet();
 	}
-
-
-
 }
