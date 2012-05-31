@@ -13,6 +13,7 @@ class GLWidgetEx2 : public QGLWidget {
 
 		cg2::PointCloud2D pointCloud;
 		cg2::PointCloud2D pointGrid;
+		cg2::PointCloud2D pointGridCasteljau;
 
 		void mouseMoveEvent(QMouseEvent * event);
 		void mousePressEvent(QMouseEvent * event);
@@ -26,9 +27,14 @@ class GLWidgetEx2 : public QGLWidget {
 		void recalc();
 
 		float pointSizeSource;
+
 		float pointSizeGrid;
 		int gridSize;
-		bool renderPoints;
+
+		float pointSizeGridCasteljau;
+		int gridSizeCasteljau;
+
+		int renderMode;
 
 		// some stateholders for mouse motion
 		// last mouse position in window
@@ -39,8 +45,13 @@ class GLWidgetEx2 : public QGLWidget {
 
 	public slots:
 		void setPointSizeSource(double size);
+
 		void setPointSizeGrid(double size);
 		void setGridSize(int size);
+
+		void setPointSizeGridCasteljau(double size);
+		void setGridSizeCasteljau(int size);
+
 		void setDrawKDTree(int state);
 		void setRenderMode(int state);
 };

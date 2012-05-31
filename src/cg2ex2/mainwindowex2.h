@@ -11,7 +11,7 @@ class MainWindowEx2 : public QMainWindow {
 		class QDockWidget * uiRenderSettings;
 
 		class QCheckBox * uiRenderKDTree;
-		class QCheckBox * uiRenderPoints;
+		class QRadioButton * uiRenderMode[3];
 
 		class QDoubleSpinBox * uiPointSizeSource;
 		class QLabel * uiPointSizeSourceLabel;
@@ -22,9 +22,15 @@ class MainWindowEx2 : public QMainWindow {
 		class QSpinBox * uiGridSize;
 		class QLabel * uiGridSizeLabel;
 
+		class QDoubleSpinBox * uiPointSizeGridCasteljau;
+		class QLabel * uiPointSizeGridCasteljauLabel;
+
+		class QSpinBox * uiGridSizeCasteljau;
+		class QLabel * uiGridSizeCasteljauLabel;
+
 	public:
 		MainWindowEx2(QMainWindow * parent = 0);
-		~MainWindowEx2();
+		~MainWindowEx2() {}
 
 	private slots:
 };

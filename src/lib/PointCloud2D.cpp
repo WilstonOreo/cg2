@@ -132,12 +132,11 @@ namespace cg2 {
 		float const xmin = box.min.x, ymin = box.min.y;
 		float const radius = max(sqrt(xdist*xdist + ydist*ydist)*2, 0.08f);
 		vertices.clear();
-		cerr << "width=" << width_ << ", height=" << height_ << endl;
 		vertices.reserve(width_*height_);
 
-		for (unsigned xp = 0; xp < width_; xp++) {
+		for (size_t xp = 0; xp < width_; xp++) {
 			float x = xmin + xp*xdist;
-			for (unsigned yp = 0; yp < height_; yp++) {
+			for (size_t yp = 0; yp < height_; yp++) {
 				float y = ymin + yp*ydist;
 				Vertex currentXY(Point3f(x, y, 0));
 				int nPoints = 0;
@@ -165,17 +164,17 @@ namespace cg2 {
 		}
 
 		// Calculate Normals
-		for (unsigned xp = 0; xp < width_; xp++) {
-			for (unsigned yp = 0; yp < height_; yp++) {
-				Vertex & v = vertices[xp*height_+yp];
+		for (size_t xp = 0; xp < width_; xp++) {
+			for (size_t yp = 0; yp < height_; yp++) {
+				Vertex & v = getVertex(xp, yp);
 				Point3f v00 = v.v;
-				Point3f v01 = (xp+1 < width_) ? vertices[(xp+1)*height_+yp].v : v00;
-				Point3f v10 = (yp+1 < height_) ? vertices[xp*height_+yp+1].v : v00;
-				Point3f v0n = xp>0 ? vertices[(xp-1)*height_+yp].v : v00;
-				Point3f vn0 = yp>0 ? vertices[xp*height_+yp-1].v : v00;
+				Point3f v01 = getVertex(xp  , yp+1).v;
+				Point3f v10 = getVertex(xp+1, yp  ).v;
+				Point3f v0n = getVertex(xp  , yp-1).v;
+				Point3f vn0 = getVertex(xp-1, yp  ).v;
 				v.n = (
-					(v01 - v00).cross(v10-v00).normalized() +
-					(v00 - v0n).cross(v00-vn0).normalized()
+					(v10 - v00).cross(v01-v00).normalized() +
+					(v00 - vn0).cross(v00-v0n).normalized()
 				).normalized();
 			}
 		}
@@ -183,14 +182,94 @@ namespace cg2 {
 		update();
 	}
 
+	template<class T> mathvector<T> casteljau(mathvector<T> const & in, double t) {
+		mathvector<T> result(in.size()-1);
+
+		for (size_t i = 0; i < result.size(); ++i) {
+			result[i] = in[i]+(in[i+1]-in[i])*t;
+		}
+
+		return result;
+	}
+
+	template<class T> T casteljau_value(mathvector<T> const & in, double t) {
+		mathvector<T> out(in);
+
+		while (out.size() > 1) {
+			mathvector<T> tmp = casteljau(out, t);
+			tmp.swap(out);
+		}
+
+		return out.front();
+	}
+
+	template<class T> mathvector<T> casteljau_diff(mathvector<T> const & in, double t) {
+		mathvector<T> out(in);
+
+		while (out.size() > 2) {
+			mathvector<T> tmp = casteljau(out, t);
+			tmp.swap(out);
+		}
+
+		return out;
+	}
+
+	void PointCloud2D::generateCasteljauGrid(PointCloud2D const & in) {
+		size_t inWidth = in.width();
+		size_t inHeight = in.height();
+		mathvector< mathvector<Vec3f> > grid(inWidth, mathvector<Vec3f>(inHeight));
+
+		for (size_t xp = 0; xp < inWidth; xp++) {
+			for (size_t yp = 0; yp < inHeight; yp++) {
+				grid[xp][yp] = in.getVertex(xp, yp).v.vec3f();
+			}
+		}
+
+		BoundingBox box = in.boundingBox();
+		float const xdist = 1.0 / (width_-1), ydist = 1.0 / (height_-1);
+		float const xmin = 0, ymin = 0;
+
+		vertices.clear();
+		for (size_t xp = 0; xp < width_; xp++) {
+			float x = xmin + xp*xdist;
+			mathvector< mathvector<Vec3f> > diffLines = casteljau_diff(grid, x);
+			mathvector<Vec3f> frontLine = diffLines.front();
+			mathvector<Vec3f> backLine = diffLines.back();
+
+			mathvector<Vec3f> valueLine = casteljau_value(diffLines, x);
+			for (size_t yp = 0; yp < height_; yp++) {
+				float y = ymin + yp*ydist;
+				if (true) {
+					mathvector<mathvector<Vec3f> > diffPoints;
+					diffPoints.push_back(casteljau_diff(frontLine,y));
+					diffPoints.push_back(casteljau_diff(backLine,y));
+
+#define dp(a,b) diffPoints[a-xp][b-yp]
+					const Vec3f & v00 = dp(xp  , yp  );
+					const Vec3f & v01 = dp(xp  , yp+1);
+					const Vec3f & v10 = dp(xp+1, yp  );
+
+					Vec3f normal = (v10 - v00).cross(v01-v00).normalized();
+
+					Vec3f valuePoint = casteljau_value(valueLine, y);
+					Vertex vertex(Point3f(valuePoint.x, valuePoint.y, valuePoint.z), normal);
+					vertices.push_back(vertex);
+				}
+				else {
+					vertices.push_back(in.getVertex(xp, yp));
+				}
+			}
+		}
+	}
+
 	void PointCloud2D::drawSurface(Color const & color) {
 		glBegin(GL_QUADS);
-		for (unsigned x = 0; x+1 < width_; x++) {
-			for (unsigned y = 0; y+1 < height_; y++) {
-				const Vertex & v00 = vertices[x*height_+y];
-				const Vertex & v10 = (x < (width_-1)) ? vertices[(x+1)*height_+y] : v00;
-				const Vertex & v01 = (y < (height_-1)) ? vertices[x*height_+y+1] : v00;
-				const Vertex & v11 = vertices[(x+1)*height_+y+1];
+		for (unsigned xp = 0; xp+1 < width_; xp++) {
+			for (unsigned yp = 0; yp+1 < height_; yp++) {
+				const Vertex & v00 = getVertex(xp  , yp  );
+				const Vertex & v01 = getVertex(xp  , yp+1);
+				const Vertex & v10 = getVertex(xp+1, yp  );
+				const Vertex & v11 = getVertex(xp+1, yp+1);
 
 				//glColor3f(color.x,color.y,color.z);
 				glNormal3f(v00.n.x,v00.n.y,v00.n.z);

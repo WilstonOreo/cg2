@@ -160,7 +160,7 @@ namespace cg2 {
 			return Point3f(a.x+b.x, a.y+b.y, a.z+b.z);
 		}
 
-		Vec3f vec3f() {
+		Vec3f vec3f() const {
 			return Vec3f(x,y,z);
 		}
 	};

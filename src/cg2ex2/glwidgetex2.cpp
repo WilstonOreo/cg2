@@ -11,7 +11,9 @@
 using namespace cg2;
 
 GLWidgetEx2::GLWidgetEx2(QWidget * parent) :
-	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent) {
+	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent),
+	gridSize(3), gridSizeCasteljau(3)
+{
 }
 
 void GLWidgetEx2::setPointSizeSource(double size) {
@@ -30,13 +32,24 @@ void GLWidgetEx2::setGridSize(int size) {
 	updateGL();
 }
 
+void GLWidgetEx2::setPointSizeGridCasteljau(double size) {
+	pointSizeGridCasteljau = size;
+	updateGL();
+}
+
+void GLWidgetEx2::setGridSizeCasteljau(int size) {
+	gridSizeCasteljau = size;
+	recalc();
+	updateGL();
+}
+
 void GLWidgetEx2::setDrawKDTree(int state) {
 	pointCloud.drawKDTree(state != Qt::Unchecked);
 	updateGL();
 }
 
-void GLWidgetEx2::setRenderMode(int state) {
-	renderPoints = state != Qt::Unchecked;
+void GLWidgetEx2::setRenderMode(int mode) {
+	renderMode = mode;
 	updateGL();
 }
 
@@ -47,6 +60,10 @@ void GLWidgetEx2::recalc() {
 	pointGrid.width(gridSize);
 	pointGrid.height(gridSize);
 	pointGrid.generateGrid(pointCloud);
+
+	pointGridCasteljau.width(gridSizeCasteljau);
+	pointGridCasteljau.height(gridSizeCasteljau);
+	pointGridCasteljau.generateCasteljauGrid(pointGrid);
 
 	//makeGrid(pointGrid, pointCloud, gridSize);
 }
@@ -169,13 +186,15 @@ void GLWidgetEx2::paintGL() {
 		glPointSize(pointSizeSource);
 		pointCloud.draw(cg2::Color(0.8,0.5,0.0));
 	}
-	if (renderPoints) {
+	switch (renderMode) {
+	case 0:
 		if (pointSizeGrid) {
 			glPointSize(pointSizeGrid);
 			pointGrid.draw(cg2::Color(0.0,0.5,1.0));
 		}
-	}
-	else {
+		break;
+
+	case 1:
 		glEnable(GL_LIGHTING);
 		glPolygonMode(GL_BACK, GL_LINE);
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -189,11 +208,27 @@ void GLWidgetEx2::paintGL() {
 		glEnable(GL_CULL_FACE);
 
 		pointGrid.drawSurface(Color(0.25,0.25,0.25));
-	}
+		break;
 
-	/*GLUquadric * foo = gluNewQuadric();
-	gluSphere(foo,1,20,20);
-	gluDeleteQuadric(foo);*/
+	case 2:
+		GLUquadric * foo = gluNewQuadric();
+		gluSphere(foo,1,20,20);
+		gluDeleteQuadric(foo);
+		glEnable(GL_LIGHTING);
+		glPolygonMode(GL_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT, GL_FILL);
+		glDisable(GL_CULL_FACE);
+
+		pointGridCasteljau.drawSurface(Color(1,1,1));
+
+		glDisable(GL_LIGHTING);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glColor4f(0,0,0,0.125);
+		glEnable(GL_CULL_FACE);
+
+		pointGridCasteljau.drawSurface(Color(0.25,0.25,0.25));
+		break;
+	}
 }
 
 
