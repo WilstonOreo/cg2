@@ -1,0 +1,64 @@
+
+#include "cg2/PointCloud.hpp"
+
+namespace cg2 {
+
+
+  struct Voxel
+  {
+    Voxel() : f_(0.0) {}
+
+    float f_;
+    Point3f center_,n_;
+  };
+
+
+  class ImpliciteSurface : public PointCloud
+  { 
+    
+    void read(string filename);
+
+    void size(unsigned _x, unsigned _y, unsigned _z)
+    {
+      x_ = _x; y_ = _y; z_ = _z;
+      voxels.clear(); voxels.resize(x_*y_*z_);
+
+      for (unsigned x = 0; x < x_; x++)
+        for (unsigned y = 0; y < y_; y++)
+          for (unsigned z = 0; z < z_; z++)
+          {
+            Vec3f v = boundingBox.min + voxelSize() % Vec3f(x,y,z) + voxelSize()*0.5;
+            voxel(x,y,z).center_.set(v.x,v.y,v.z);
+          }
+
+      calcBoundingBox();
+    }
+
+    Voxel& voxel(unsigned _posX, unsigned _posY, unsigned _posY) const 
+    {
+      return voxels_[ (( y_ * _posZ ) + _posY)  * x_ + _posX];
+    }
+
+    Voxel& voxel(const Point3f& _point) const
+    {
+      Vec3f invSize(1.0f/boundingBox.size().x,1.0f/boundingBox.size().y,1.0f/boundingBox.size().z);
+      Vec3f _p = (_point - boundingBox.min) % invSize % Vec3f(x_,y_,z_);
+
+      return voxel(unsigned(_p.x),unsigned(_p.y),unsigned(_p.z));
+    }
+
+    Vec3f voxelSize() const;
+
+  protected:
+    void calcBoundingBox();
+    void calcBorderConditions(float _epsilon, std::vector<Point3f>& _points);
+
+  private:
+    unsigned x_, y_, z_;
+
+    std::vector<Voxel> voxels_;
+    std::vector<float> f_, f_pN_, f_p2N_;
+    
+    float epsilon_;
+  }
+}

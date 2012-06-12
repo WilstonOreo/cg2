@@ -60,6 +60,9 @@ namespace cg2 {
 			virtual set<Vertex const *> collectKNearest(Point3f const & p, int k) const;
 			virtual set<Vertex const *> collectInRadius(Point3f const & p, float radius) const;
 
+      bool isNearest(const Vertex& _v, const Point3f& _p);
+
+
 			set<Vertex const *> selection;
 
 			TBD_DECLARE_PROPERTY(bool,drawKDTree);

@@ -212,4 +212,10 @@ namespace cg2 {
 		return pointSet.vertexSet();
 	}
 
+  bool PointCloud::isNearest(const Vertex& _v, const Point3f& _p)
+  {
+    float radius = (_v.v - _p).length();
+    return collectInRadius(_p,radius).empty();
+  }
+
 }
