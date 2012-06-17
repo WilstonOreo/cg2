@@ -5,10 +5,10 @@
 TEMPLATE = app
 DEPENDPATH += . \
               include/cg2 \
-              src/cg2ex1 \
+              src/cg2ex3 \
               src/lib \
               src/test
-INCLUDEPATH += . src/cg2ex1 include ../TbdLib/include
+INCLUDEPATH += . src/cg2ex3 include ../TbdLib/include
 
 !win32|win64 {
     LIBS += -lGLU
@@ -47,6 +47,7 @@ HEADERS += include/cg2/BoundingBox.hpp \
            include/cg2/Triangle.hpp \
            include/cg2/TriangleMesh.hpp \
            include/cg2/Vector.hpp \
+           include/cg2/ImpliciteSurface.hpp \
 		   include/cg2/Vertex.hpp \
 		   include/cg2/PointCloud2D.hpp \
 
@@ -66,6 +67,7 @@ SOURCES += src/lib/BoundingBox.cpp \
            src/lib/Sphere.cpp \
            src/lib/Triangle.cpp \
            src/lib/Vector.cpp \
+           src/lib/ImpliciteSurface.cpp \
 		   src/lib/Vertex.cpp \
 		   src/lib/PointCloud2D.cpp
 
@@ -87,4 +89,13 @@ cg2ex2 {
 	SOURCES += src/cg2ex2/mainwindowex2.cpp \
 			   src/cg2ex2/mainex2.cpp \
 			   src/cg2ex2/glwidgetex2.cpp
+}
+
+cg2ex3 {
+	TARGET = cg2ex3
+	HEADERS += src/cg2ex3/mainwindowex3.h \
+			   src/cg2ex3/glwidgetex3.h
+	SOURCES += src/cg2ex3/mainwindowex3.cpp \
+			   src/cg2ex3/mainex3.cpp \
+			   src/cg2ex3/glwidgetex3.cpp
 }

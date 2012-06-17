@@ -1,4 +1,6 @@
-#include "cg2/VoxelGrid.hpp"
+#include "cg2/ImpliciteSurface.hpp"
+
+#include <boost/foreach.hpp>
 
 namespace cg2
 {
@@ -6,31 +8,28 @@ namespace cg2
   void ImpliciteSurface::calcBoundingBox()
   {
     PointCloud::calcBoundingBox();
-
-    boundingBox().min -= 0.5 * voxelSize();
-    boundingBox().max += 0.5 * voxelSize();
-    epsilon_ = boundingBox.size().length() * 0.01;
+    Point3f _halfVoxelSize(voxelSize().x*0.5,voxelSize().y*0.5,voxelSize().z*0.5);
+    boundingBox().min -= _halfVoxelSize;
+    boundingBox().max += _halfVoxelSize;
+    epsilon_ = boundingBox().size().length() * 0.01;
   }
 
-  void ImpliciteSurface::voxelSize() const
+  Vec3f ImpliciteSurface::voxelSize() const
   {
-    return Vec3f(boundingBox.size().x/_x,
-                 boundingBox.size().y/_y,
-                 boundingBox.size().z/_z);
+    return Vec3f(boundingBox().size().x/x_,
+                 boundingBox().size().y/y_,
+                 boundingBox().size().z/z_);
   }
 
   void ImpliciteSurface::read(string filename)
   {
     PointCloud::read(filename);
 
-    f_.reserve(vertices.size());
-    BOOST_FOREACH( float& _f, f_ ) _f = 0.0;
-
-    calcBorderConditions( _epsilon,f_pN_);
-    calcBorderConditions(-_epsilon,f_p2N_);
+    calcBorderConditions( epsilon_,f_pN_);
+    calcBorderConditions(-epsilon_,f_p2N_);
   }
 
-  void VoxelGrid::calcBorderConditions(float _epsilon, vector<float>& _f)
+  void ImpliciteSurface::calcBorderConditions(float _epsilon, vector<float>& _f)
   {
     _f.reserve(vertices.size());
     
@@ -54,10 +53,10 @@ namespace cg2
 		return std::pow(1-d/h, 4)*(4*d/h+1);
 	}
   
-  void VoxelGrid::calcImplicit()
+  void ImpliciteSurface::calcImplicit()
   {
     float radius = voxelSize().length()*0.5;
-
+/*
     BOOST_FOREACH( Voxel& _voxel, voxels_ )
     {
       set<const Vertex*> _vertices = collectInRadius(_voxel.center_,2*radius);
@@ -66,8 +65,10 @@ namespace cg2
       {
         float radius1_ = _voxel.center_() - p0;
       }
-    }
+    }*/
   }
+
+/*
 typedef struct {
    XYZ p[3];
 } TRIANGLE;
@@ -76,7 +77,7 @@ typedef struct {
    XYZ p[8];
    double val[8];
 } GRIDCELL;
-
+*/
 /*
    Given a grid cell and an isolevel, calculate the triangular
    facets required to represent the isosurface through the cell.
@@ -85,6 +86,8 @@ typedef struct {
 	0 will be returned if the grid cell is either totally above
    of totally below the isolevel.
 */
+
+/*
 int Polygonise(GRIDCELL grid,double isolevel,TRIANGLE *triangles)
 {
    int i,ntriang;
@@ -381,12 +384,13 @@ int triTable[256][16] =
 {0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
-
+*/
    /*
       Determine the index into the edge table which
       tells us which vertices are inside of the surface
    */
-   cubeindex = 0;
+  
+   /*cubeindex = 0;
    if (grid.val[0] < isolevel) cubeindex |= 1;
    if (grid.val[1] < isolevel) cubeindex |= 2;
    if (grid.val[2] < isolevel) cubeindex |= 4;
@@ -396,11 +400,11 @@ int triTable[256][16] =
    if (grid.val[6] < isolevel) cubeindex |= 64;
    if (grid.val[7] < isolevel) cubeindex |= 128;
 
-   /* Cube is entirely in/out of the surface */
+   // Cube is entirely in/out of the surface 
    if (edgeTable[cubeindex] == 0)
       return(0);
 
-   /* Find the vertices where the surface intersects the cube */
+   // Find the vertices where the surface intersects the cube 
    if (edgeTable[cubeindex] & 1)
       vertlist[0] =
          VertexInterp(isolevel,grid.p[0],grid.p[1],grid.val[0],grid.val[1]);
@@ -438,7 +442,7 @@ int triTable[256][16] =
       vertlist[11] =
          VertexInterp(isolevel,grid.p[3],grid.p[7],grid.val[3],grid.val[7]);
 
-   /* Create the triangle */
+   // Create the triangle 
    ntriang = 0;
    for (i=0;triTable[cubeindex][i]!=-1;i+=3) {
       triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i  ]];
@@ -449,11 +453,12 @@ int triTable[256][16] =
 
    return(ntriang);
 }
-
+*/
 /*
    Linearly interpolate the position where an isosurface cuts
    an edge between two vertices, each with their own scalar value
 */
+/*
 XYZ VertexInterp(isolevel,p1,p2,valp1,valp2)
 double isolevel;
 XYZ p1,p2;
@@ -475,6 +480,6 @@ double valp1,valp2;
 
    return(p);
 }
-
+*/
 
 }
