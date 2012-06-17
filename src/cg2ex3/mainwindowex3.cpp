@@ -80,7 +80,7 @@ MainWindowEx3::MainWindowEx3(QMainWindow * parent) : QMainWindow(parent) {
 	uiPointSizeSource->setValue(2);
 
 	uiPointSizeGrid->setValue(1);
-	uiGridSize->setValue(65);
+	uiGridSize->setValue(17);
 
 	uiRenderMode[1]->click();
 }

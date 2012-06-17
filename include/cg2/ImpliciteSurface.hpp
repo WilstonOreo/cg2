@@ -6,36 +6,21 @@ namespace cg2 {
 
   struct Voxel
   {
-    Voxel() : f_(0.0) {}
+    Voxel() : f_(0.0), empty_(true) {}
 
     float f_;
-    Point3f center_,n_;
+    Point3f center_;
+    Vec3f n_;
+    bool empty_;
   };
 
 
-  class ImpliciteSurface : public PointCloud
+  class ImpliciteSurface : public PointCloud 
   { 
     public: 
     void read(string filename);
 
-    void size(unsigned _x, unsigned _y, unsigned _z)
-    {
-      x_ = _x; y_ = _y; z_ = _z;
-      voxels_.clear(); voxels_.resize(x_*y_*z_);
-
-      Vec3f _voxelSize = voxelSize();
-
-      for (unsigned x = 0; x < x_; x++)
-        for (unsigned y = 0; y < y_; y++)
-          for (unsigned z = 0; z < z_; z++)
-          {
-            Vec3f _pos(x,y,z);
-            Vec3f v = boundingBox().min.vec3f() + _voxelSize % _pos + _voxelSize*0.5;
-            voxel(x,y,z).center_.set(v.x,v.y,v.z);
-          }
-
-      calcBoundingBox();
-    }
+    void size(unsigned _x, unsigned _y, unsigned _z);
 
      Voxel& voxel(unsigned _posX, unsigned _posY, unsigned _posZ)  
     {
@@ -55,8 +40,10 @@ namespace cg2 {
 
     Vec3f voxelSize() const;
 
-    void drawPoints(Color color = Color()) {}
-    void drawValues(Color color = Color()) {}
+    void draw(Color color = Color()) const;
+    void drawPoints(Color color, Point3f _lightPos) const;
+    void drawValues(Color color, Point3f _lightPos) const;
+    void drawGrid(Color color = Color()) const;
 
   protected:
     void calcBoundingBox();

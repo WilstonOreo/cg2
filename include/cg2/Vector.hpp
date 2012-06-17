@@ -102,7 +102,7 @@ namespace cg2 {
 		friend Vec3f operator*(float f, const Vec3f & a) {
 			return Vec3f(a.x*f, a.y*f, a.z*f);
 		}
-		friend float operator*(Vec3f & a, Vec3f & b) {
+		friend float operator*(const Vec3f a, const Vec3f b) {
 			return a.x*b.x + a.y*b.y + a.z*b.z;
 		}
 		friend Vec3f operator%(Vec3f & a, Vec3f & b) {

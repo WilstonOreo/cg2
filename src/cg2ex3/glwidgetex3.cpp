@@ -12,8 +12,9 @@ using namespace cg2;
 
 GLWidgetEx3::GLWidgetEx3(QWidget * parent) :
 	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::AlphaChannel | QGL::DirectRendering), parent),
-	gridSize(3), gridSizeCasteljau(3)
+	gridSize(33), drawGrid(true)
 {
+  
 }
 
 void GLWidgetEx3::setPointSizeSource(double size) {
@@ -33,7 +34,7 @@ void GLWidgetEx3::setGridSize(int size) {
 }
 
 void GLWidgetEx3::setDrawGrid(int state) {
-	impliciteSurface.drawKDTree(state != Qt::Unchecked);
+	drawGrid = state != Qt::Unchecked;
 	updateGL();
 }
 
@@ -50,9 +51,9 @@ void GLWidgetEx3::recalc()
 
 void GLWidgetEx3::initializeGL() 
 {
-	impliciteSurface.read("cat.off");
-
+	impliciteSurface.read("torus.off");
 	recalc();
+
 	// Set up the rendering context, define display lists etc.:
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
@@ -79,6 +80,10 @@ void GLWidgetEx3::initializeGL()
 	GLfloat LightDiffuse[]= { 1.0f, 1.0f, 1.0f, 1.0f };
 	GLfloat model_ambient[] = { 0.3, 0.3, 0.3 };
 	GLfloat light_position[] = { 0.0, 0.0, 2.0, 1.0 };
+
+  lightPos_.set(0.0,0.0,2.0);
+
+
 	/*glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);*/
@@ -164,19 +169,21 @@ void GLWidgetEx3::paintGL() {
 	glRotatef(pitch, 1, 0, 0);
 	glRotatef(yaw, 0, 0, 1);
 	glTranslatef(-center.x,-center.y,-center.z);
+
+  if (drawGrid) impliciteSurface.drawGrid(cg2::Color(0.2,0.2,0.2));
  
   switch (renderMode) {
 	case 0:
 		if (pointSizeGrid) {
 			glPointSize(pointSizeGrid);
-			impliciteSurface.drawPoints(cg2::Color(0.0,0.5,1.0));
+			impliciteSurface.drawPoints(cg2::Color(0.0,0.5,1.0),lightPos_);
 		}
 		break;
 
 	case 1:
 		if (pointSizeGrid) {
 			glPointSize(pointSizeGrid);
-		  impliciteSurface.drawValues(cg2::Color(0.0,0.5,1.0));
+		  impliciteSurface.drawValues(cg2::Color(0.0,0.5,1.0),lightPos_);
 		}
 		break;
 

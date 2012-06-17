@@ -215,7 +215,7 @@ namespace cg2 {
   bool PointCloud::isNearest(const Vertex& _v, const Point3f& _p)
   {
     float radius = (_v.v - _p).length();
-    return collectInRadius(_p,radius).empty();
+    return collectInRadius(_p,radius).size() <= 1;
   }
 
 }

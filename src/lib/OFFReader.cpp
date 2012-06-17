@@ -38,7 +38,7 @@ namespace cg2 {
 
 			switch (mode) {
 				case HEADER:
-					if (row=="OFF") {
+					if (row=="OFF" || row=="NOFF") {
 						mode = SIZE;
 						nRow++;
 					}

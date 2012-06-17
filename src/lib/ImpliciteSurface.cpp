@@ -1,6 +1,9 @@
 #include "cg2/ImpliciteSurface.hpp"
 
+#include "cg2/OFFReader.hpp"
+#include <GL/gl.h>
 #include <boost/foreach.hpp>
+#include <tbd/log.h>
 
 namespace cg2
 {
@@ -8,10 +11,10 @@ namespace cg2
   void ImpliciteSurface::calcBoundingBox()
   {
     PointCloud::calcBoundingBox();
-    Point3f _halfVoxelSize(voxelSize().x*0.5,voxelSize().y*0.5,voxelSize().z*0.5);
+    Point3f _halfVoxelSize(boundingBox().size().x/x_*0.5,boundingBox().size().y/y_*0.5,boundingBox().size().z/z_*0.5);
     boundingBox().min -= _halfVoxelSize;
     boundingBox().max += _halfVoxelSize;
-    epsilon_ = boundingBox().size().length() * 0.01;
+    epsilon_ = boundingBox().size().length() * 0.01;  
   }
 
   Vec3f ImpliciteSurface::voxelSize() const
@@ -21,27 +24,106 @@ namespace cg2
                  boundingBox().size().z/z_);
   }
 
+  void ImpliciteSurface::draw(Color color) const
+  {
+
+  }
+
+  void ImpliciteSurface::drawPoints(Color color, Point3f _lightPos) const
+  { 
+    glBegin(GL_POINTS);
+		BOOST_FOREACH(Vertex const & vertex, vertices) 
+    {
+			glColor3f(color.x,color.y,color.z);
+			glVertex3f(vertex.v.x,vertex.v.y,vertex.v.z);
+		}
+		glEnd();
+  }
+
+  void ImpliciteSurface::drawValues(Color color, Point3f _lightPos) const
+  {
+    glBegin(GL_POINTS);
+
+
+    BOOST_FOREACH ( const Voxel& voxel, voxels_ )
+    {
+      Vec3f _lightN = (_lightPos - voxel.center_).normalized();
+      float lightD = fabs(_lightN * voxel.n_);
+
+      Color _c( 0.5+voxel.f_ , 0.5+voxel.f_, 0.2);
+
+      float alpha = (voxel.empty_) ? 0.2 : 1.0;
+
+      if (_c.x < 0.0) _c.x = 0.0;
+      if (_c.y < 0.0) _c.y = 0.0;
+      if (_c.x > 1.0) _c.x = 1.0;
+      if (_c.y > 1.0) _c.y = 1.0;
+      
+      glColor4f(_c.x,_c.y,_c.z,alpha);
+			glVertex3f(voxel.center_.x,voxel.center_.y,voxel.center_.z);
+		}
+		glEnd();
+
+  }
+
+  void ImpliciteSurface::drawGrid(Color color) const
+  {
+    Point3f _half(voxelSize().x*0.5,voxelSize().y*0.5,voxelSize().z*0.5);
+    BoundingBox box; 
+    BOOST_FOREACH ( const Voxel& voxel, voxels_ )
+    {
+      Vec3f c = voxel.center_.vec3f();
+      box.min = Point3f(c.x - _half.x,c.y - _half.y,c.z - _half.z);
+      box.max = Point3f(c.x + _half.x,c.y + _half.y,c.z + _half.z);
+      box.draw(color);
+    }
+  }
+
+
   void ImpliciteSurface::read(string filename)
   {
-    PointCloud::read(filename);
+    LOG_MSG << fmt("Reading % ...") % filename;
+    OFFReader off;
+
+    vector<Polygon> _polygons;
+		off.read(filename,&vertices,&_polygons);
+
+    // Calculate Normals
+		BOOST_FOREACH(Polygon& polygon, _polygons) 
+    {
+			Vec3f n = polygon.normal();
+			BOOST_FOREACH(Vertex* vertex, polygon.vertices)
+			  vertex->n += n;
+		}
+		BOOST_FOREACH(Vertex& vertex, vertices)	
+    {
+      vertex.n.normalize();
+      LOG_MSG << fmt("% % %") % vertex.n.x % vertex.n.y % vertex.n.z;
+    }
+    PointCloud::update();
+
+    calcBoundingBox();
 
     calcBorderConditions( epsilon_,f_pN_);
     calcBorderConditions(-epsilon_,f_p2N_);
   }
 
+
+
   void ImpliciteSurface::calcBorderConditions(float _epsilon, vector<float>& _f)
   {
     _f.reserve(vertices.size());
     
+    unsigned i = 0;
     BOOST_FOREACH ( Vertex& vertex, vertices )
     {
       float _epsTmp = _epsilon;
-      Point3f p;
+      Point3f p;      
       do {
        p = vertex.v + _epsTmp * vertex.n; 
        _epsTmp *= 0.5;
       } while (!isNearest(vertex.v,p));
-     
+
       _f.push_back(_epsTmp);
     }
   }
@@ -53,19 +135,76 @@ namespace cg2
 		return std::pow(1-d/h, 4)*(4*d/h+1);
 	}
   
+  
+  void ImpliciteSurface::size(unsigned _x, unsigned _y, unsigned _z)
+  {
+      LOG_MSG << fmt("New size: % % %") % _x % _y % _z;
+      x_ = _x; y_ = _y; z_ = _z;
+      voxels_.clear(); voxels_.resize(x_*y_*z_);
+      calcBoundingBox();
+
+      Vec3f _voxelSize = voxelSize();
+
+      for (unsigned x = 0; x < x_; x++)
+        for (unsigned y = 0; y < y_; y++)
+          for (unsigned z = 0; z < z_; z++)
+          {
+            Vec3f _pos(x,y,z);
+            Vec3f v = boundingBox().min.vec3f() + _voxelSize % _pos + _voxelSize*0.5;
+            voxel(x,y,z).center_.set(v.x,v.y,v.z);
+          }
+
+      calcImplicit();
+  }
+  
   void ImpliciteSurface::calcImplicit()
   {
+    LOG_MSG << "Calculating values...";
     float radius = voxelSize().length()*0.5;
-/*
+
     BOOST_FOREACH( Voxel& _voxel, voxels_ )
     {
       set<const Vertex*> _vertices = collectInRadius(_voxel.center_,2*radius);
+      _voxel.f_ = 0;
+      _voxel.n_.set(0.0,0.0,0.0);
 
+      float _weightSum = 0.0;
       BOOST_FOREACH( const Vertex* _vertex, _vertices )
       {
-        float radius1_ = _voxel.center_() - p0;
+        unsigned index = ptrdiff_t(size_t(_vertex) - size_t(&vertices[0])) / sizeof(_vertex);
+        
+        float _near = f_pN_[index], _far = f_p2N_[index];
+
+        Point3f _pNear = _vertex->v + _near * _vertex->n ;
+        Point3f _pFar  = _vertex->v + _far  * _vertex->n ;
+
+        float _radiusNear = (_voxel.center_ - _pNear).length();
+        float _radiusFar  = (_voxel.center_ - _pFar).length();
+
+        float _weightNear = wendland(_radiusNear,radius);
+        float _weightFar = wendland(_radiusFar,radius);
+        float _weight = _weightNear + _weightFar;
+
+        _voxel.f_ += _near * _weightNear + _far * _weightFar;
+        _voxel.n_ += _vertex->n * _weight;
+
+        _weightSum += _weight;
       }
-    }*/
+
+      _voxel.empty_ = (_weightSum < 0.000001);
+
+      if (!_voxel.empty_)
+      {
+          _voxel.f_ /= _weightSum; 
+          _voxel.n_ *= (1.0 / _weightSum);
+          _voxel.n_.normalize();
+      }
+      else
+      {
+          _voxel.f_ = 0.0;
+          _voxel.n_.set(0.0,0.0,0.0);
+      }
+    }
   }
 
 /*

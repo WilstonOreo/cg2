@@ -27,10 +27,6 @@ class GLWidgetEx3 : public QGLWidget {
 
 		float pointSizeGrid;
 		int gridSize;
-
-		float pointSizeGridCasteljau;
-		int gridSizeCasteljau;
-
 		int renderMode;
 
 		// some stateholders for mouse motion
@@ -38,6 +34,9 @@ class GLWidgetEx3 : public QGLWidget {
 		int old_x, old_y;
 		float yaw, pitch;
 
+    cg2::Point3f lightPos_;
+
+    bool drawGrid;
 	signals:
 
 	public slots:
