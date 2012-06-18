@@ -5,6 +5,8 @@
 #include "cg2/Median.hpp"
 #include <GL/glu.h>
 
+using namespace std;
+
 namespace cg2
 {
   PointSet2D::PointSet2D(Point3f _center, float _radius, int _k) : PointSet(_center,_radius,_k)
@@ -151,7 +153,7 @@ namespace cg2
 
   void PointCloud2D::generateGrid(PointCloud const & in)
   {
-    BoundingBox box = in.boundingBox();
+    BoundingBox box = in.boundingBox_;
     float const xdist = box.size().x / (width_-1), ydist = box.size().y / (height_-1);
     float const xmin = box.min.x, ymin = box.min.y;
     float const radius = max(sqrt(xdist*xdist + ydist*ydist)*2, 0.08f);
@@ -264,7 +266,7 @@ namespace cg2
       }
     }
 
-    BoundingBox box = in.boundingBox();
+    BoundingBox box = in.boundingBox_;
     float const xdist = 1.0 / (width_-1), ydist = 1.0 / (height_-1);
     float const xmin = 0, ymin = 0;
 
@@ -331,24 +333,23 @@ namespace cg2
     glEnd();
   }
 
-
   void PointCloud2D::update()
   {
     calcBoundingBox();
-    kdTree.build(vertices,boundingBox());
+    kdTree.build(vertices,boundingBox_);
   }
 
   set<Vertex const *> PointCloud2D::collectKNearest(Point3f const & p, int k) const
   {
     PointSet2D pointSet(p,std::numeric_limits<float>::max(),k);
-    kdTree.collect(kdTree.root,boundingBox(),pointSet);
+    kdTree.collect(kdTree.root,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 
   set<Vertex const *> PointCloud2D::collectInRadius(Point3f const & p, float radius) const
   {
     PointSet2D pointSet(p,radius);
-    kdTree.collect(kdTree.root,boundingBox(),pointSet);
+    kdTree.collect(kdTree.root,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 }

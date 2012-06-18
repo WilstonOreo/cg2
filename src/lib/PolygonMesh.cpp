@@ -32,7 +32,7 @@ namespace cg2
   {
     BOOST_FOREACH(Vertex& vertex, vertices)
     {
-      Vec3f n = boundingBox().size().length()*0.02f*vertex.n;
+      Vec3f n = boundingBox_.size().length()*0.02f*vertex.n;
 
       glPushMatrix();
       glTranslatef(vertex.v.x,vertex.v.y,vertex.v.z);

@@ -6,8 +6,9 @@ namespace cg2
   struct SceneObject : public Primitive
   {
     bool visible;
+    BoundingBox boundingBox_;
     TBD_PROPERTY_REF(Matrix4f,matrix);
-    TBD_PROPERTY_REF(BoundingBox,boundingBox);
+    
 
   protected:
     virtual void calcBoundingBox() = 0;

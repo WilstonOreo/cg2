@@ -35,10 +35,10 @@ namespace cg2
 
     const Voxel* voxel(const Point3f& _point) const
     {
-      Vec3f invSize(1.0f/boundingBox().size().x*x_,
-                    1.0f/boundingBox().size().y*y_,
-                    1.0f/boundingBox().size().z*z_);
-      Vec3f _org =  (_point - boundingBox().min);
+      Vec3f invSize(1.0f/boundingBox_.size().x*x_,
+                    1.0f/boundingBox_.size().y*y_,
+                    1.0f/boundingBox_.size().z*z_);
+      Vec3f _org =  (_point - boundingBox_.min);
       Vec3f _p = _org % invSize;
 
       int _x = int(_p.x), _y = int(_p.y), _z = int(_p.z);

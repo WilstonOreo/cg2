@@ -229,7 +229,7 @@ void GLWidgetEx3::resizeGL(int w, int h)
   GLdouble centerZ= 0;
   // set camera parameters
   GLdouble eyeX=0;
-  GLdouble eyeZ=-1.5*impliciteSurface.boundingBox().size().length();
+  GLdouble eyeZ=-1.5*impliciteSurface.boundingBox_.size().length();
   GLdouble eyeY=0;
   GLdouble upX=0;
   GLdouble upZ=0;
@@ -271,7 +271,7 @@ Point3f unProject(QPoint const & pos)
 
 void GLWidgetEx3::paintGL()
 {
-  cg2::Vec3f center = 0.5*(impliciteSurface.boundingBox().max.vec3f() + impliciteSurface.boundingBox().min.vec3f());
+  cg2::Vec3f center = 0.5*(impliciteSurface.boundingBox_.max.vec3f() + impliciteSurface.boundingBox_.min.vec3f());
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -354,77 +354,4 @@ void GLWidgetEx3::mousePressEvent(QMouseEvent * event)
   }
 }
 
-double wendland(double d, double h)
-{
-  /*x *= h;
-  const double Q_PI = 3.14159265358979323846;
-  return (1/sqrt(2*Q_PI))*exp(-0.5*d*d); // gauss, not wendland*/
-  return std::pow(1-d/h, 4)*(4*d/h+1);
-}
 
-void makeGrid(PointCloud & out, PointCloud const & in, int gridSize)
-{
-  BoundingBox box = in.boundingBox();
-  int const width = gridSize, height = gridSize;
-  float const xdist = box.size().x / width, ydist = box.size().y / height;
-  float const xmin = box.min.x, ymin = box.min.y;
-
-  float const radius = sqrt(xdist*xdist + ydist*ydist)*2;
-  //float const radius = 2;
-
-
-  //vector<float> grid;  // Den Typ Array2D gibts nich, analog kann man auch vector< vector<float> > nehmen
-  //grid.resize(width*height);
-
-  out.vertices.clear();
-  for (int xp = 0; xp < width; xp++)
-  {
-    float x = xmin + xp*xdist;
-    for (int yp = 0; yp < height; yp++)
-    {
-      float y = ymin + yp*ydist;
-
-      Point3f currentXY(x, y, 0);
-      int nPoints = 0;
-      double sumWeight = 0;
-      double currentZ = 0;
-      foreach(Vertex const * v, in.collectInRadius(currentXY, radius))
-      {
-        Point3f const & p = v->v;
-        Point3f pFlat(p);
-        pFlat.z = 0;
-
-        if ((currentXY-p).length() > radius)
-        {
-          std::cout << "point exceeds radius: " << (currentXY-p).length() << std::endl;
-        }
-        double distance = (currentXY-pFlat).length(); // Distanz zwischen P und (x,y,0)
-        double weight = wendland(distance, radius);
-
-        sumWeight += weight;
-        currentZ += weight * p.z;
-
-        nPoints++;
-      }
-      if (nPoints && sumWeight)
-      {
-        /*std::cout
-                << "nPoints=" << nPoints
-                << " sumWeight=" << sumWeight
-                << " currentZ=" << currentZ;*/
-
-        //current /= nPoints;
-        currentZ /= sumWeight;
-        /*std::cout
-                << " after=" << currentZ
-                << std::endl;*/
-      }
-
-      //grid[y*width+x] = current;
-
-      currentXY.z = currentZ;
-      out.vertices.push_back(currentXY);
-    }
-  }
-  out.update();
-}

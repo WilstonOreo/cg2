@@ -205,18 +205,18 @@ namespace cg2
   void PointCloud::update()
   {
     calcBoundingBox();
-    kdTree.build(vertices,boundingBox());
+    kdTree.build(vertices,boundingBox_);
   }
 
   void PointCloud::draw(Color const & color) const
   {
     if (drawBoundingBox_ && !drawKDTree_)
     {
-      boundingBox().draw(boundingBoxColor());
+      boundingBox_.draw(boundingBoxColor());
     }
     if (drawKDTree_)
     {
-      kdTree.draw(kdTreeColor(),boundingBox());
+      kdTree.draw(kdTreeColor(),boundingBox_);
     }
 
     glBegin(GL_POINTS);
@@ -239,14 +239,14 @@ namespace cg2
   set<Vertex const *> PointCloud::collectKNearest(Point3f const & p, int k) const
   {
     PointSet pointSet(p,std::numeric_limits<float>::max(),k);
-    kdTree.collect(kdTree.root,boundingBox(),pointSet);
+    kdTree.collect(kdTree.root,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 
   set<Vertex const *> PointCloud::collectInRadius(Point3f const & p, float radius) const
   {
     PointSet pointSet(p,radius);
-    kdTree.collect(kdTree.root,boundingBox(),pointSet);
+    kdTree.collect(kdTree.root,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 

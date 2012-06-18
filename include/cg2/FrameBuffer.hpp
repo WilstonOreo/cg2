@@ -41,7 +41,7 @@ namespace cg2
 
       int pos = (h()-1-Y)*w() + X;
       sampleBuffer[pos]++;
-      img.data()[pos] += color;
+//      img.data()[pos] += color;
       //    cout << img._data[pos].x << " " << sampleBuffer[pos] << endl;
     }
 
@@ -54,7 +54,7 @@ namespace cg2
         {
           continue;
         }
-        image.data()[i] = (1.0f / sampleBuffer[i]) * img.data()[i];
+       // image.data()[i] = (1.0f / sampleBuffer[i]) * img.data()[i];
       }
     }
 

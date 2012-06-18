@@ -10,8 +10,7 @@ TEMPLATE = app
                          src/test
                          INCLUDEPATH += . src/cg2ex3 include ../TbdLib/include
 
-                                        !win32|win64
-{
+!win32|win64 {
   LIBS += -lGLU
 }
 
@@ -72,8 +71,7 @@ QT += opengl
                             src/lib/Vertex.cpp \
                             src/lib/PointCloud2D.cpp
 
-                            cg2ex1
-{
+cg2ex1 {
   TARGET = cg2ex1
   HEADERS += src/cg2ex1/glwidget.h \
   src/cg2ex1/helper.h \
@@ -84,8 +82,7 @@ QT += opengl
   src/cg2ex1/MainWindow.cpp
 }
 
-cg2ex2
-{
+cg2ex2 {
   TARGET = cg2ex2
   HEADERS += src/cg2ex2/mainwindowex2.h \
   src/cg2ex2/glwidgetex2.h
@@ -94,8 +91,7 @@ cg2ex2
   src/cg2ex2/glwidgetex2.cpp
 }
 
-cg2ex3
-{
+cg2ex3 {
   TARGET = cg2ex3
   HEADERS += src/cg2ex3/mainwindowex3.h \
   src/cg2ex3/glwidgetex3.h

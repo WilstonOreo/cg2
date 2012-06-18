@@ -8,21 +8,21 @@ namespace cg2
 {
   void Mesh::calcBoundingBox()
   {
-    boundingBox().min.set(INF,INF,INF);
-    boundingBox().max.set(-INF,-INF,-INF);
+    boundingBox_.min.set(INF,INF,INF);
+    boundingBox_.max.set(-INF,-INF,-INF);
 
     BOOST_FOREACH(Vertex & vertex, vertices)
     {
       Point3f v = vertex.v;
       for (int j = 0; j < 3; j++)
       {
-        if (v.cell[j] > boundingBox().max.cell[j])
+        if (v.cell[j] > boundingBox_.max.cell[j])
         {
-          boundingBox().max.cell[j] = v.cell[j];
+          boundingBox_.max[j] = v[j];
         }
-        if (v.cell[j] < boundingBox().min.cell[j])
+        if (v.cell[j] < boundingBox_.min.cell[j])
         {
-          boundingBox().min.cell[j] = v.cell[j];
+          boundingBox_.min[j] = v[j];
         }
       }
     }

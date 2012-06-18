@@ -5,23 +5,25 @@
 #include <boost/foreach.hpp>
 #include <tbd/log.h>
 
+using namespace std;
+
 namespace cg2
 {
 
   void ImpliciteSurface::calcBoundingBox()
   {
     PointCloud::calcBoundingBox();
-    Point3f _halfVoxelSize(boundingBox().size().x/x_*0.5,boundingBox().size().y/y_*0.5,boundingBox().size().z/z_*0.5);
-    boundingBox().min -= _halfVoxelSize;
-    boundingBox().max += _halfVoxelSize;
-    epsilon_ = boundingBox().size().length() * 0.01;
+    Point3f _halfVoxelSize(boundingBox_.size().x/x_*0.5,boundingBox_.size().y/y_*0.5,boundingBox_.size().z/z_*0.5);
+    boundingBox_.min -= _halfVoxelSize;
+    boundingBox_.max += _halfVoxelSize;
+    epsilon_ = boundingBox_.size().length() * 0.01;
   }
 
   Vec3f ImpliciteSurface::voxelSize() const
   {
-    return Vec3f(boundingBox().size().x/x_,
-                 boundingBox().size().y/y_,
-                 boundingBox().size().z/z_);
+    return Vec3f(boundingBox_.size().x/x_,
+                 boundingBox_.size().y/y_,
+                 boundingBox_.size().z/z_);
   }
 
   void ImpliciteSurface::draw(Color color) const
@@ -155,7 +157,7 @@ namespace cg2
         for (unsigned z = 0; z < z_; z++)
         {
           Vec3f _pos(x,y,z);
-          Vec3f v = boundingBox().min.vec3f() + _voxelSize % _pos + _voxelSize*0.5;
+          Vec3f v = boundingBox_.min.vec3f() + _voxelSize % _pos + _voxelSize*0.5;
           voxel(x,y,z)->center_.set(v.x,v.y,v.z);
         }
 
@@ -204,19 +206,15 @@ namespace cg2
 
   bool  ImpliciteSurface::intersect(Ray& ray, Vec3f& normal) const
   {
-    if (!boundingBox().intersect(ray)) return false;
+    if (!boundingBox_.intersect(ray)) return false;
     const Voxel* _voxel = NULL;
 
 #define N_STEPS 1000
     float tDelta = (ray.tmax - ray.tmin) / N_STEPS;
-
     float t = ray.tmin;
 
     Point3f iPoint = ray.org + t * ray.dir;
-
-
-
-
+/*
     for (int i = 0; i < N_STEPS; i++)
     {
       Voxel* _voxel = voxel(iPoint);
@@ -232,7 +230,7 @@ namespace cg2
 incT:
       t += tDelta;
     }
-
+*/
 
     return false;
   }
@@ -248,7 +246,7 @@ incT:
     {
       if (abs(ray.dir[i]) < 0.001) continue;
 
-      float minV = boundingBox().min[i], maxV = boundingBox().max[i];
+      float minV = boundingBox_.min[i], maxV = boundingBox_.max[i];
       if (ray.dir[i] < 0) swap(minV,maxV);
 
       _tN[i] = (minV - ray.org[i]) / ray.dir[i];
