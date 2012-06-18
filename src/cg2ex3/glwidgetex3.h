@@ -5,48 +5,57 @@
 
 #include "cg2/ImpliciteSurface.hpp"
 
-class GLWidgetEx3 : public QGLWidget {
-		Q_OBJECT
-	public:
-		explicit GLWidgetEx3(QWidget * parent = 0);
+class GLWidgetEx3 : public QGLWidget
+{
+  Q_OBJECT
+public:
+  explicit GLWidgetEx3(QWidget * parent = 0);
 
-		cg2::ImpliciteSurface impliciteSurface;
+  cg2::ImpliciteSurface impliciteSurface;
 
-		void mouseMoveEvent(QMouseEvent * event);
-		void mousePressEvent(QMouseEvent * event);
+  void mouseMoveEvent(QMouseEvent * event);
+  void mousePressEvent(QMouseEvent * event);
 
-	protected:
-		virtual void initializeGL();
-		virtual void resizeGL(int w, int h);
-		virtual void paintGL();
+protected:
+  virtual void initializeGL();
+  virtual void resizeGL(int w, int h);
+  virtual void paintGL();
 
-	private:
-		void recalc();
+private:
+  void recalc();
 
-		float pointSizeSource;
+  std::vector<cg2::Ray> generateRays();
 
-		float pointSizeGrid;
-		int gridSize;
-		int renderMode;
 
-		// some stateholders for mouse motion
-		// last mouse position in window
-		int old_x, old_y;
-		float yaw, pitch;
+  float pointSizeSource;
 
-    cg2::Point3f lightPos_;
+  float pointSizeGrid;
+  int gridSize;
+  int renderMode;
 
-    bool drawGrid;
-	signals:
+  // some stateholders for mouse motion
+  // last mouse position in window
+  int old_x, old_y;
+  float yaw, pitch;
 
-	public slots:
-		void setPointSizeSource(double size);
+  cg2::Point3f lightPos_;
 
-		void setPointSizeGrid(double size);
-		void setGridSize(int size);
+  std::vector<cg2::Ray> rays_;
 
-		void setDrawGrid(int state);
-		void setRenderMode(int state);
+  bool drawGrid;
+signals:
+
+public slots:
+  void setPointSizeSource(double size);
+
+  void setPointSizeGrid(double size);
+  void setGridSize(int size);
+
+  void setDrawGrid(int state);
+  void setRenderMode(int state);
+
+  void raytrace();
+  void spheretrace();
 };
 
 #endif // GLWIDGET_H
