@@ -5,9 +5,9 @@
 
 using namespace std;
 
-namespace cg2
+namespace cg2 
 {
-  void OFFWriter::write(std::string filename, vector<Vertex> const * vertices, vector<Polygon> const * polygons)
+  void OFFWriter::write(std::string filename, const Vertices* vertices, const Polygons* polygons) const
   {
 
     unsigned V = vertices ? vertices->size() : 0,
@@ -21,20 +21,20 @@ namespace cg2
 
     if (vertices)
     {
-      BOOST_FOREACH(Vertex const & vertex, *vertices)
-      os << vertex.v.x << " " << vertex.v.y << " " << vertex.v.z << endl;
+      BOOST_FOREACH( const Vertex& vertex, *vertices )
+        os << vertex.v.x() << " " << vertex.v.y() << " " << vertex.v.z() << endl;
     }
 
     if (polygons)
     {
-      BOOST_FOREACH(Polygon const & polygon, *polygons)
+      BOOST_FOREACH( const Polygon& polygon, *polygons )
       {
-        os << polygon.size();
-        BOOST_FOREACH(Vertex* vertex, polygon.vertices)
-        {
-          long long vertexIdx = ((long long)vertex - (long long)vertices) / sizeof(Vertex);
-          os << vertexIdx;
-        }
+         os << polygon.size();
+         BOOST_FOREACH( Vertex* vertex, polygon )
+         {
+           long long vertexIdx = ((long long)vertex - (long long)vertices) / sizeof(Vertex);
+           os << vertexIdx;
+         }
       }
     }
   }

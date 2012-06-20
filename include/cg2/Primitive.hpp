@@ -1,20 +1,28 @@
 #pragma once
 
-#include "cg2/Object.hpp"
-#include "cg2/Shader.hpp"
 #include "cg2/Ray.hpp"
+#include "cg2/Object.hpp"
+#include "cg2/Bounds.hpp"
 
-namespace cg2
+namespace cg2 
 {
-  struct Primitive: public Object
+  /* @brief A primitive is an object which has an extent and for which an intersection point can be found 
+  */
+  struct Primitive : public Object
   {
-    virtual Vec3f normal(const Ray & ray) const = 0;
-    virtual TexCoords texCoords(const Ray & ray) const = 0;
+    /** @brief Virtual method to determine intersection point
+     * @param _ray        Ray for intersection
+     * @param _normal     Pointer to normal determined from intersection
+     * @param _texCoords  Pointer to texCoords to be returned
+     */
+    virtual bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const = 0;
 
-    virtual bool intersect(Ray & ray) const = 0;
+    /** @brief Return bounds of primitive
+     */
+    virtual Bounds bounds() const = 0;
 
-    TBD_PROPERTY(Shader *, shader);
+    /** @brief Return pointer to object
+     */
+    Primitive* pointer() const { return const_cast<Primitive*>(this); }
   };
-
-  DEFINE_CONTAINERS(Primitive)
 }

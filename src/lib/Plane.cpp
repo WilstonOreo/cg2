@@ -1,62 +1,25 @@
 #include "cg2/Plane.hpp"
 
-#include <cmath>
-#include <GL/gl.h>
-
-using std::abs;
-
-namespace cg2
+namespace cg2 
 {
-  bool Plane::intersect(Ray & ray)
+  bool Plane::intersect(Ray& _ray, Vec3f* _normal, Point2f* _texCoords) const
   {
-    float dn = ray.dir * _n;
-    if (dn == 0.0f)
-    {
-      return false;
-    }
+    float dn = _ray.dir_.dot(normal_);
+    if (dn == 0.0f) return false;
 
-    Vec3f org = ray.org - _c;
-    float d = -(_n * org) / dn;
-    if (d < 0)
-    {
-      return false;
-    }
+    Vec3f org = _ray.org_ - center_;
+    float d = -(normal_.dot(org)) / dn;
+    if (d < 0) return false;
 
-    Vec3f iPoint = ray.org+ray.dir*d - _c;
-    if (_infinite || (abs(iPoint.x) < _w && abs(iPoint.z) < _w && abs(iPoint.y) < _w))
-    {
-      if (!ray.t(d))
-      {
-        return false;
-      }
-      ray.obj = this;
-      ray.normal = _n;
-      return true;
-    }
-    return false;
+    Vec3f iPoint = _ray.org_+_ray.dir_*d - center_;
+
+    if (_normal) (*_normal)(normal_);
+
+    return _ray.intersection(this->pointer(),d);
   }
 
-  void Plane::draw(Color color)
+  Bounds Plane::bounds() const
   {
-    glPushMatrix();
-    glColor3f(color.x, color.y, color.z);
-    glTranslatef(_c[0], _c[1], _c[2]);
-
-    Vec3f y = Vec3f(0, 1, 0);
-    Vec3f n = _n.normalized();
-    Vec3f rotaxis = n.cross(y);
-    float rotangle = 180.0f * acos(y*n) / M_PI;
-    glRotatef(rotangle, rotaxis[0], rotaxis[1], rotaxis[2]);
-
-    glBegin(GL_QUADS);
-    glNormal3fv(y.p());
-    glVertex3f(_w, 0, _w);
-    glVertex3f(_w, 0, -_w);
-    glVertex3f(-_w, 0, -_w);
-    glVertex3f(-_w, 0, _w);
-    glEnd();
-
-    glPopMatrix();
+    return Bounds(Point3f(-INF,-INF,-INF),Point3f(INF,INF,INF));
   }
-
 }

@@ -2,28 +2,21 @@
 
 #include "cg2/Primitive.hpp"
 
-namespace cg2
+namespace cg2 
 {
-  struct Plane : public Primitive
+  struct Plane : public Primitive 
   {
-    bool _infinite;
-    Point3f _c;
-    Vec3f _n;
-    float _w;
+    Plane(const Point3f& _center, const Vec3f& _normal)
+      : center_(_center), normal_(_normal)
+    {}
 
-    Plane(const Point3f & center, const Vec3f & normal, float width)
-      : _c(center), _n(normal), _w(width)
-    {
+    bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const;
 
-    }
+    void draw(Color4f const & color = Color4f()) const {}
 
-    bool intersect(Ray & ray);
-    Vec3f normal(const Vec3f & iPoint)
-    {
-      Q_UNUSED(iPoint);
-      return _n;
-    }
+    Bounds bounds() const;
 
-    void draw(Color color = Color());
+    Point3f center_;
+    Vec3f normal_;
   };
 }

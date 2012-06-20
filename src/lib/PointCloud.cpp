@@ -4,10 +4,11 @@
 #include <boost/foreach.hpp>
 
 #include <cassert>
-#include <GL/gl.h>
 
 #include "cg2/OFFReader.hpp"
 #include "cg2/OFFWriter.hpp"
+
+#include <GL/glu.h>
 
 #include "tbd/log.h"
 
@@ -45,13 +46,12 @@ namespace cg2
     return true;
   }
 
-  set<Vertex const *> PointSet::vertexSet()
+
+  set<const Vertex*> PointSet::vertexSet()
   {
-    set<Vertex const *> result;
-    BOOST_FOREACH(const entry & p, points)
-    {
+    set<const Vertex*> result;
+    BOOST_FOREACH( const entry& p, points )
       result.insert(p.second);
-    }
     return result;
   }
 
@@ -77,56 +77,39 @@ namespace cg2
     }
     return INF;
   }
+ 
+  static bool compareX(const Vertex* a, const Vertex* b) { return a->v.x() < b->v.x(); }
+  static bool compareY(const Vertex* a, const Vertex* b) { return a->v.y() < b->v.y(); }
+  static bool compareZ(const Vertex* a, const Vertex* b) { return a->v.z() < b->v.z(); }
 
-  static bool compareX(const Vertex * a, const Vertex * b)
+  void PointCloud::collect(KDNode<Vertex>* node, const BoundingBox& box, PointSet& pointSet) const
   {
-    return a->v.x < b->v.x;
-  }
-  static bool compareY(const Vertex * a, const Vertex * b)
-  {
-    return a->v.y < b->v.y;
-  }
-  static bool compareZ(const Vertex * a, const Vertex * b)
-  {
-    return a->v.z < b->v.z;
-  }
-
-  void PointKDTree::collect(KDNode<Vertex> const * node, BoundingBox const & box, PointSet & pointSet) const
-  {
-    if (!node)
-    {
-      return;
-    }
+    if (!node) return;
 
     if (node->isLeaf())
     {
-      BOOST_FOREACH(Vertex* vertex, node->objs)
-      pointSet.insert(vertex);
+      BOOST_FOREACH( Vertex* vertex, node->objs )
+        pointSet.insert(vertex);
       return;
     }
-
+    
     BoundingBox boxLeft, boxRight;
     box.split(node->splitPos,node->axis,boxLeft,boxRight);
-
-    if (nodeDistance(pointSet.center(),boxLeft) < pointSet.maxDist())
-    {
+    
+    if (nodeDistance(pointSet.center(),boxLeft) < pointSet.maxDist()) 
       collect(node->left,boxLeft,pointSet);
-    }
     if (nodeDistance(pointSet.center(),boxRight) < pointSet.maxDist())
-    {
       collect(node->right,boxRight,pointSet);
-    }
   }
-  void PointKDTree::divideNode(KDNode<Vertex> * node, BoundingBox & box, int depth)
+
+  void PointCloud::divideNode(KDNode<Vertex>* node, const BoundingBox& box, int depth)
   {
     assert(node);
     LOG_MSG_(2) << fmt("Depth: %, objs: %") % depth % node->objs.size();
 
     if (depth > 20 || node->objs.size() < 4)
-    {
-      // We have a leaf node!
-      node->left = NULL;
-      node->right = NULL;
+    {   // We have a leaf node!
+      node->left = NULL; node->right = NULL;
       return;
     }
     node->left = new KDNode<Vertex>();
@@ -135,24 +118,17 @@ namespace cg2
 
     switch (node->axis)
     {
-    case X:
-      node->splitPos = median(node->objs,compareX)->v.x;
-      break;
-    case Y:
-      node->splitPos = median(node->objs,compareY)->v.y;
-      break;
-    case Z:
-      node->splitPos = median(node->objs,compareZ)->v.z;
-      break;
-    default:
-      return;
+      case X: node->splitPos = median(node->objs,compareX)->v.x(); break;
+      case Y: node->splitPos = median(node->objs,compareY)->v.y(); break;
+      case Z: node->splitPos = median(node->objs,compareZ)->v.z(); break;
+      default: return;
     }
     BoundingBox boxLeft, boxRight;
     box.split(node->splitPos,node->axis,boxLeft,boxRight);
-
-    BOOST_FOREACH(Vertex* vertex, node->objs)
+    
+    BOOST_FOREACH( Vertex* vertex, node->objs )
     {
-      KDNode<Vertex> * subNode = (vertex->v[node->axis] < node->splitPos) ? node->left : node->right;
+      KDNode<Vertex>* subNode = (vertex->v[node->axis] < node->splitPos) ? node->left : node->right;
       subNode->objs.push_back(vertex);
     }
     node->objs.clear();
@@ -160,97 +136,81 @@ namespace cg2
     divideNode(node->right,boxRight,depth+1);
   }
 
-  float PointKDTree::nodeDistance(Point3f const & p, BoundingBox const & box) const
+  float PointCloud::nodeDistance(const Point3f& p, const BoundingBox& box) const
   {
-    if (box.pointInBox(p))
-    {
-      return 0.0;
-    }
+    if (box.pointInBox(p)) return 0.0;
 
     float minDist = INF;
-    FOREACH_AXIS
+    FOREACH_AXIS 
     {
-      if (axis == Z) continue;
-      minDist = std::min(std::abs(p[axis] - box.min[axis]),std::abs(box.max[axis] - p[axis]));
+      minDist = std::min(std::abs(p[axis] - box.min()[axis]),std::abs(box.max()[axis] - p[axis]));
     }
 
-    //  LOG_MSG << minDist;
+  //  LOG_MSG << minDist;
     return minDist;
   }
 
 
-  PointCloud::PointCloud() : drawKDTree_(false),
-    kdTreeColor_(Color(0.0,0.2,0.4)),
-    drawBoundingBox_(false),
-    boundingBoxColor_(Color(0.0,1.0,0.0)),
-    selectionColor_(Color(1.0,1.0,1.0))
+  PointCloud::PointCloud() : drawKDTree_(false), 
+                             //kdTreeColor_(Color(0.0,0.2,0.4)), 
+                             drawBoundingBox_(false)
+                             //boundingBoxColor_(Color(0.0,1.0,0.0)),
+                             //selectionColor_(Color(1.0,1.0,1.0))
   {
 
   }
 
-  void PointCloud::read(string const & filename)
+  void PointCloud::read(const string& filename)
   {
-    vertices.clear();
     OFFReader off;
-    off.read(filename,&vertices,NULL);
+    off.read(filename,&this->objs_,NULL);
     update();
   }
 
-  void PointCloud::write(string const & filename) const
+  void PointCloud::write(const string& filename) const
   {
     OFFWriter off;
-    off.write(filename,&vertices,NULL);
+    off.write(filename,&this->objs_,NULL);
   }
 
   void PointCloud::update()
   {
     calcBoundingBox();
-    kdTree.build(vertices,boundingBox_);
+    build(objs_,boundingBox_);
   }
 
-  void PointCloud::draw(Color const & color) const
+  void PointCloud::draw(const Color4f& _color) const
   {
-    if (drawBoundingBox_ && !drawKDTree_)
-    {
-      boundingBox_.draw(boundingBoxColor());
-    }
-    if (drawKDTree_)
-    {
-      kdTree.draw(kdTreeColor(),boundingBox_);
-    }
+    if (drawBoundingBox_ && !drawKDTree_) boundingBox_.draw(boundingBoxColor());
 
     glBegin(GL_POINTS);
-    BOOST_FOREACH(Vertex const & vertex, vertices)
+    BOOST_FOREACH( const Vertex& vertex, objs_ )
     {
       if (selection.count(&vertex))
-      {
-        glColor3f(selectionColor().x,selectionColor().y,selectionColor().z);
-      }
+        glColor4f(selectionColor().r(),selectionColor().g(),selectionColor().b(),selectionColor().a());
       else
-      {
-        glColor3f(color.x,color.y,color.z);
-      }
-      glVertex3f(vertex.v.x,vertex.v.y,vertex.v.z);
+        glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
+      glVertex3f(COORDS(vertex.v));
     }
-    glEnd();
+    glEnd(); 
   }
 
 
-  set<Vertex const *> PointCloud::collectKNearest(Point3f const & p, int k) const
+  std::set<const Vertex*> PointCloud::collectKNearest(const Point3f& p, int k) const
   {
-    PointSet pointSet(p,std::numeric_limits<float>::max(),k);
-    kdTree.collect(kdTree.root,boundingBox_,pointSet);
+    PointSet pointSet(p,0.0,k);
+    collect(root_,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 
-  set<Vertex const *> PointCloud::collectInRadius(Point3f const & p, float radius) const
+  std::set<const Vertex*> PointCloud::collectInRadius(const Point3f& p, float radius) const
   {
-    PointSet pointSet(p,radius);
-    kdTree.collect(kdTree.root,boundingBox_,pointSet);
+    PointSet pointSet(p,radius); 
+    collect(root_,boundingBox_,pointSet);
     return pointSet.vertexSet();
   }
 
-  bool PointCloud::isNearest(const Vertex& _v, const Point3f& _p)
+  bool PointCloud::isNearest(const Vertex& _v, const Point3f& _p) const
   {
     float radius = (_v.v - _p).length();
     return collectInRadius(_p,radius).size() <= 1;

@@ -1,18 +1,15 @@
-#include "cg2/Shader.hpp"
 #include "cg2/BoundingBox.hpp"
 
 namespace cg2
 {
+  /* A SceneObject is an object which is transformable and displayable within a scene.
+     Moreover, it has a bounding box to determine its extents.
+   */
   struct SceneObject : public Primitive
   {
     bool visible;
-    BoundingBox boundingBox_;
-    TBD_PROPERTY_REF(Matrix4f,matrix);
-    
-
+    TBD_PROPERTY_REF(Matrix4f,matrix);   
   protected:
     virtual void calcBoundingBox() = 0;
   };
-
-  DEFINE_CONTAINERS(SceneObject)
 }

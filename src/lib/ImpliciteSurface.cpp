@@ -13,36 +13,36 @@ namespace cg2
   void ImpliciteSurface::calcBoundingBox()
   {
     PointCloud::calcBoundingBox();
-    Point3f _halfVoxelSize(boundingBox_.size().x/x_*0.5,boundingBox_.size().y/y_*0.5,boundingBox_.size().z/z_*0.5);
-    boundingBox_.min -= _halfVoxelSize;
-    boundingBox_.max += _halfVoxelSize;
+    Point3f _halfVoxelSize(boundingBox_.size().x()/x_*0.5,
+                           boundingBox_.size().y()/y_*0.5,
+                           boundingBox_.size().z()/z_*0.5);
+    boundingBox_.min() -= _halfVoxelSize;
+    boundingBox_.max() += _halfVoxelSize;
     epsilon_ = boundingBox_.size().length() * 0.01;
   }
 
   Vec3f ImpliciteSurface::voxelSize() const
   {
-    return Vec3f(boundingBox_.size().x/x_,
-                 boundingBox_.size().y/y_,
-                 boundingBox_.size().z/z_);
+    return Vec3f(boundingBox_.size().x()/x_,boundingBox_.size().y()/y_,boundingBox_.size().z()/z_);
   }
 
-  void ImpliciteSurface::draw(Color color) const
+  void ImpliciteSurface::draw(const Color4f& _color) const
   {
-
+    mesh_.draw();
   }
 
-  void ImpliciteSurface::drawPoints(Color color, Point3f _lightPos) const
+  void ImpliciteSurface::drawPoints(const Color4f& _color, Point3f _lightPos) const
   {
     glBegin(GL_POINTS);
-    BOOST_FOREACH(Vertex const & vertex, vertices)
+    BOOST_FOREACH(Vertex const & vertex, vertices() )
     {
-      glColor3f(color.x,color.y,color.z);
-      glVertex3f(vertex.v.x,vertex.v.y,vertex.v.z);
+      glColor3f(_color.r(),_color.g(),_color.b());
+      glVertex3f(vertex.v.x(),vertex.v.y(),vertex.v.z());
     }
     glEnd();
   }
 
-  void ImpliciteSurface::drawValues(Color color, Point3f _lightPos) const
+  void ImpliciteSurface::drawValues(const Color4f& _color, Point3f _lightPos) const
   {
     glBegin(GL_POINTS);
 
@@ -51,34 +51,34 @@ namespace cg2
     BOOST_FOREACH ( const Voxel& voxel, voxels_ )
     {
       Vec3f _lightN = (_lightPos - voxel.center_).normalized();
-      float lightD = fabs(_lightN * voxel.n_);
+      float lightD = abs(_lightN.dot(voxel.n_));
 
-      Color _c( voxel.f_ / radius , 1.0 - voxel.f_ / radius, 0.2);
+      Color4f _c( voxel.f_ / radius , 1.0 - voxel.f_ / radius, 0.2);
 
-      float alpha = (voxel.empty_) ? 0.2 : 1.0;
+      _c.a((voxel.empty_) ? 0.1 : (voxel.f_ < 0.0) ? 0.2 : 1.0);
 
-      if (_c.x < 0.0) _c.x = 0.0;
-      if (_c.y < 0.0) _c.y = 0.0;
-      if (_c.x > 1.0) _c.x = 1.0;
-      if (_c.y > 1.0) _c.y = 1.0;
+      if (_c.r() < 0.0) _c.r(0.0);
+      if (_c.g() < 0.0) _c.g(0.0);
+      if (_c.r() > 1.0) _c.r(1.0);
+      if (_c.g() > 1.0) _c.g(1.0);
 
-      glColor4f(_c.x,_c.y,_c.z,alpha);
-      glVertex3f(voxel.center_.x,voxel.center_.y,voxel.center_.z);
+      glColor4f(_c.r(),_c.g(),_c.b(),_c.a());
+      glVertex3f(voxel.center_.x(),voxel.center_.y(),voxel.center_.z());
     }
     glEnd();
 
   }
 
-  void ImpliciteSurface::drawGrid(Color color) const
+  void ImpliciteSurface::drawGrid(const Color4f& _color) const
   {
-    Point3f _half(voxelSize().x*0.5,voxelSize().y*0.5,voxelSize().z*0.5);
+    Point3f _half(voxelSize().x()*0.5,voxelSize().y()*0.5,voxelSize().z()*0.5);
     BoundingBox box;
     BOOST_FOREACH ( const Voxel& voxel, voxels_ )
     {
-      Vec3f c = voxel.center_.vec3f();
-      box.min = Point3f(c.x - _half.x,c.y - _half.y,c.z - _half.z);
-      box.max = Point3f(c.x + _half.x,c.y + _half.y,c.z + _half.z);
-      box.draw(color);
+      Vec3f c = voxel.center_.vec();
+      box.min(Point3f(c.x() - _half.x(),c.y() - _half.y(),c.z() - _half.z()));
+      box.max(Point3f(c.x() + _half.x(),c.y() + _half.y(),c.z() + _half.z()));
+      box.draw(_color);
     }
   }
 
@@ -88,19 +88,20 @@ namespace cg2
     LOG_MSG << fmt("Reading % ...") % filename;
     OFFReader off;
 
-    vector<Polygon> _polygons;
-    off.read(filename,&vertices,&_polygons);
+    vector<Triangle> _triangles;
+/*    off.read(filename,&vertices(),&_triangles);
 
     // Calculate Normals
-    BOOST_FOREACH(Polygon& polygon, _polygons)
+    BOOST_FOREACH(Triangle& , _triangles)
     {
+      // TODO make 
       Vec3f n = polygon.normal();
       BOOST_FOREACH(Vertex* vertex, polygon.vertices)
-      vertex->n -= n;
+        vertex->n -= n;
     }
     BOOST_FOREACH(Vertex& vertex, vertices)
-    vertex.n.normalize();
-
+      vertex.n.normalize();
+*/
     PointCloud::update();
 
     calcBoundingBox();
@@ -113,15 +114,15 @@ namespace cg2
 
   void ImpliciteSurface::calcBorderConditions(float _epsilon, vector<float>& _f)
   {
-    _f.reserve(vertices.size());
+    _f.reserve(vertices().size());
 
     unsigned i = 0;
-    BOOST_FOREACH ( Vertex& vertex, vertices )
+    BOOST_FOREACH ( Vertex& vertex, Compound<Vertex>::objs_ )
     {
       float _epsTmp = _epsilon;
       Point3f p;
       do
-      {
+      { 
         p = vertex.v + _epsTmp * vertex.n;
         _epsTmp *= 0.5;
       }
@@ -157,8 +158,8 @@ namespace cg2
         for (unsigned z = 0; z < z_; z++)
         {
           Vec3f _pos(x,y,z);
-          Vec3f v = boundingBox_.min.vec3f() + _voxelSize % _pos + _voxelSize*0.5;
-          voxel(x,y,z)->center_.set(v.x,v.y,v.z);
+          Vec3f v = boundingBox_.min().vec() + _voxelSize * _pos + _voxelSize*0.5;
+          voxel(x,y,z)->center_(v.x(),v.y(),v.z());
         }
 
     calcImplicit();
@@ -171,9 +172,9 @@ namespace cg2
 
     BOOST_FOREACH( Voxel& _voxel, voxels_ )
     {
-      set<const Vertex*> _vertices = collectInRadius(_voxel.center_,2*radius);
+      std::set<const Vertex*> _vertices = PointCloud::collectInRadius(_voxel.center_,radius);
       _voxel.f_ = 0;
-      _voxel.n_.set(0.0,0.0,0.0);
+      _voxel.n_(0.0,0.0,0.0);
 
       float _weightSum = 0.0;
       BOOST_FOREACH( const Vertex* _vertex, _vertices )
@@ -182,7 +183,7 @@ namespace cg2
         float dist = _p.length();
         float _weight = wendland(dist,radius);
 
-        _voxel.f_ += _p * _voxel.n_ * _weight ;
+        _voxel.f_ += _p.dot(_vertex->n) * _weight ;
         _voxel.n_ += _vertex->n * _weight;
         _weightSum += _weight;
       }
@@ -198,169 +199,78 @@ namespace cg2
       else
       {
         _voxel.f_ = 0.0;
-        _voxel.n_.set(0.0,0.0,0.0);
+        _voxel.n_(0.0,0.0,0.0);
       }
     }
+
+    marchingCubes();
   }
 
-
-  bool  ImpliciteSurface::intersect(Ray& ray, Vec3f& normal) const
-  {
-    if (!boundingBox_.intersect(ray)) return false;
-    const Voxel* _voxel = NULL;
-
-#define N_STEPS 1000
-    float tDelta = (ray.tmax - ray.tmin) / N_STEPS;
-    float t = ray.tmin;
-
-    Point3f iPoint = ray.org + t * ray.dir;
-/*
-    for (int i = 0; i < N_STEPS; i++)
-    {
-      Voxel* _voxel = voxel(iPoint);
-
-      if (_voxel)
-      {
-        if (_voxel.empty_) goto incT;
-
-
-
-      }
-
-incT:
-      t += tDelta;
-    }
-*/
-
-    return false;
-  }
-
-
-
-  bool ImpliciteSurface::gridTraversal(Ray& ray, Vec3f& _normal) const
-  {
-    float tnear = INF, tfar = -INF;
-    Vec3f _tN(tnear,tnear,tnear), _tF(tfar,tfar,tfar);
-
-    for (int i = 0; i < 3; i++)
-    {
-      if (abs(ray.dir[i]) < 0.001) continue;
-
-      float minV = boundingBox_.min[i], maxV = boundingBox_.max[i];
-      if (ray.dir[i] < 0) swap(minV,maxV);
-
-      _tN[i] = (minV - ray.org[i]) / ray.dir[i];
-      _tF[i] = (maxV - ray.org[i]) / ray.dir[i];
-
-      if (_tN[i] < tnear)	tnear = _tN[i];
-      if (_tF[i] > tfar)	tfar = _tF[i];
-    }
-
-    if (tnear < tfar)
-    {
-      ray.tmin = tnear;
-      ray.tmax = tfar;
-    }
-
-    LOG_MSG << fmt("% %") % tnear % tfar;
-
-    if (tnear > tfar) return false;
-    return true;
-
-
-  }
-
-  /*
-     typedef struct {
-     XYZ p[3];
-     } TRIANGLE;
-
-     typedef struct {
-     XYZ p[8];
-     double val[8];
-     } GRIDCELL;
-     */
-  /*
-     Given a grid cell and an isolevel, calculate the triangular
-     facets required to represent the isosurface through the cell.
-     Return the number of triangular facets, the array "triangles"
-     will be loaded up with the vertices at most 5 triangular facets.
-     0 will be returned if the grid cell is either totally above
-     of totally below the isolevel.
-     */
-
-  /*
-     int Polygonise(GRIDCELL grid,double isolevel,TRIANGLE *triangles)
-     {
-     int i,ntriang;
-     int cubeindex;
-     XYZ vertlist[12];
-
-     int edgeTable[256]={
-     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
-     0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
-     0x190, 0x99 , 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
-     0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
-     0x230, 0x339, 0x33 , 0x13a, 0x636, 0x73f, 0x435, 0x53c,
-     0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
-     0x3a0, 0x2a9, 0x1a3, 0xaa , 0x7a6, 0x6af, 0x5a5, 0x4ac,
-     0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
-     0x460, 0x569, 0x663, 0x76a, 0x66 , 0x16f, 0x265, 0x36c,
-     0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
-     0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff , 0x3f5, 0x2fc,
-     0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
-     0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55 , 0x15c,
-     0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
-     0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc ,
-     0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
-     0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
-     0xcc , 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
-     0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
-     0x15c, 0x55 , 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
-     0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
-     0x2fc, 0x3f5, 0xff , 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
-     0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
-     0x36c, 0x265, 0x16f, 0x66 , 0x76a, 0x663, 0x569, 0x460,
-     0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
-     0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa , 0x1a3, 0x2a9, 0x3a0,
-     0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
-     0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33 , 0x339, 0x230,
-     0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
-     0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99 , 0x190,
-     0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-     0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   };
-     int triTable[256][16] =
-     {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 8, 3, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {9, 2, 10, 0, 2, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {2, 8, 3, 2, 10, 8, 10, 9, 8, -1, -1, -1, -1, -1, -1, -1},
-     {3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 11, 2, 8, 11, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {1, 9, 0, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {1, 11, 2, 1, 9, 11, 9, 8, 11, -1, -1, -1, -1, -1, -1, -1},
-     {3, 10, 1, 11, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 10, 1, 0, 8, 10, 8, 11, 10, -1, -1, -1, -1, -1, -1, -1},
-     {3, 9, 0, 3, 11, 9, 11, 10, 9, -1, -1, -1, -1, -1, -1, -1},
-     {9, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {4, 3, 0, 7, 3, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {0, 1, 9, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {4, 1, 9, 4, 7, 1, 7, 3, 1, -1, -1, -1, -1, -1, -1, -1},
-     {1, 2, 10, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {3, 4, 7, 3, 0, 4, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1},
-     {9, 2, 10, 9, 0, 2, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1},
-     {2, 10, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4, -1, -1, -1, -1},
-     {8, 4, 7, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-     {11, 4, 7, 11, 2, 4, 2, 0, 4, -1, -1, -1, -1, -1, -1, -1},
-     {9, 0, 1, 8, 4, 7, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1},
-     {4, 7, 11, 9, 4, 11, 9, 11, 2, 9, 2, 1, -1, -1, -1, -1},
-     {3, 10, 1, 3, 11, 10, 7, 8, 4, -1, -1, -1, -1, -1, -1, -1},
-     {1, 11, 10, 1, 4, 11, 1, 0, 4, 7, 11, 4, -1, -1, -1, -1},
-  {4, 7, 8, 9, 0, 11, 9, 11, 10, 11, 0, 3, -1, -1, -1, -1},
+  int edgeTable[256]={
+    0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
+    0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
+    0x190, 0x99 , 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
+    0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
+    0x230, 0x339, 0x33 , 0x13a, 0x636, 0x73f, 0x435, 0x53c,
+    0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
+    0x3a0, 0x2a9, 0x1a3, 0xaa , 0x7a6, 0x6af, 0x5a5, 0x4ac,
+    0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
+    0x460, 0x569, 0x663, 0x76a, 0x66 , 0x16f, 0x265, 0x36c,
+    0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
+    0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff , 0x3f5, 0x2fc,
+    0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
+    0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55 , 0x15c,
+    0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
+    0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc ,
+    0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
+    0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
+    0xcc , 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
+    0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
+    0x15c, 0x55 , 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
+    0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
+    0x2fc, 0x3f5, 0xff , 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
+    0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
+    0x36c, 0x265, 0x16f, 0x66 , 0x76a, 0x663, 0x569, 0x460,
+    0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
+    0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa , 0x1a3, 0x2a9, 0x3a0,
+    0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
+    0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33 , 0x339, 0x230,
+    0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
+    0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99 , 0x190,
+    0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
+    0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   };
+  int triTable[256][16] =
+  {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 8, 3, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {9, 2, 10, 0, 2, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {2, 8, 3, 2, 10, 8, 10, 9, 8, -1, -1, -1, -1, -1, -1, -1},
+    {3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 11, 2, 8, 11, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {1, 9, 0, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {1, 11, 2, 1, 9, 11, 9, 8, 11, -1, -1, -1, -1, -1, -1, -1},
+    {3, 10, 1, 11, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 10, 1, 0, 8, 10, 8, 11, 10, -1, -1, -1, -1, -1, -1, -1},
+    {3, 9, 0, 3, 11, 9, 11, 10, 9, -1, -1, -1, -1, -1, -1, -1},
+    {9, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {4, 3, 0, 7, 3, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {0, 1, 9, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {4, 1, 9, 4, 7, 1, 7, 3, 1, -1, -1, -1, -1, -1, -1, -1},
+    {1, 2, 10, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {3, 4, 7, 3, 0, 4, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1},
+    {9, 2, 10, 9, 0, 2, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1},
+    {2, 10, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4, -1, -1, -1, -1},
+    {8, 4, 7, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    {11, 4, 7, 11, 2, 4, 2, 0, 4, -1, -1, -1, -1, -1, -1, -1},
+    {9, 0, 1, 8, 4, 7, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1},
+    {4, 7, 11, 9, 4, 11, 9, 11, 2, 9, 2, 1, -1, -1, -1, -1},
+    {3, 10, 1, 3, 11, 10, 7, 8, 4, -1, -1, -1, -1, -1, -1, -1},
+    {1, 11, 10, 1, 4, 11, 1, 0, 4, 7, 11, 4, -1, -1, -1, -1},
+    {4, 7, 8, 9, 0, 11, 9, 11, 10, 11, 0, 3, -1, -1, -1, -1},
     {4, 7, 11, 4, 11, 9, 9, 11, 10, -1, -1, -1, -1, -1, -1, -1},
     {9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {9, 5, 4, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -586,102 +496,200 @@ incT:
     {0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
-  */
-  /*
-     Determine the index into the edge table which
-     tells us which vertices are inside of the surface
-     */
 
-  /*cubeindex = 0;
-    if (grid.val[0] < isolevel) cubeindex |= 1;
-    if (grid.val[1] < isolevel) cubeindex |= 2;
-    if (grid.val[2] < isolevel) cubeindex |= 4;
-    if (grid.val[3] < isolevel) cubeindex |= 8;
-    if (grid.val[4] < isolevel) cubeindex |= 16;
-    if (grid.val[5] < isolevel) cubeindex |= 32;
-    if (grid.val[6] < isolevel) cubeindex |= 64;
-    if (grid.val[7] < isolevel) cubeindex |= 128;
 
-  // Cube is entirely in/out of the surface
-  if (edgeTable[cubeindex] == 0)
+  Vertex ImpliciteSurface::vertexInterp(Voxel* _a, Voxel* _b)
+  { 
+    Point3f _p0 = _a->center_, _p1 = _b->center_; 
+    Vec3f  _n0 = _a->n_, _n1 = _b->n_;
+
+    float _val0 = _a->f_, _val1 = _b->f_;
+    float mu = -_val0 / ( _val1 - _val1 );
+
+    Vertex v;
+    v.v = _p0 + mu * (_p1 - _p0);
+    v.n = _n0 + mu * (_n1 - _n0);
+  
+    return v;
+  }
+
+  void ImpliciteSurface::marchingCubes()
+  {
+    mesh_.triangles().clear();
+    mesh_.vertices_.clear();
+
+    for (unsigned x = 0; x < x_-1; x++)
+      for (unsigned y = 0; y < y_-1; y++)
+        for (unsigned z = 0; z < z_-1; z++)
+        {
+          int _cubeIndex = 0;
+          Voxel* _voxels[8];
+
+          for (int i = 0; i < 8; i++)
+          {
+            _voxels[i] = voxel(x+(i & 4),y+(i & 2),z+(i & 1));
+            if (_voxels[i]->f_ < 0) _cubeIndex |= (1 << i);
+          }
+
+          Vertex vertList[12];
+          int idx1[12] = { 0,1,2,3,4,5,6,7,0,1,2,3 };
+          int idx2[12] = { 1,2,3,0,5,6,7,4,4,5,6,7 };
+
+          for (int i = 0; i < 12; i++) {
+            if (edgeTable[_cubeIndex] & (1 << i)) 
+              vertList[i] = vertexInterp(_voxels[idx1[i]],_voxels[idx2[i]]);
+          }
+ 
+          for (int i = 0;  i < triTable[_cubeIndex][i]!=-1; i += 3)
+          {
+            size_t n = mesh_.vertices_.size();
+            mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i  ]]);
+            mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i+1]]);
+            mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i+2]]);
+  
+            VertexTriangle _tri(&mesh_.vertices_[n  ],&mesh_.vertices_[n+1],&mesh_.vertices_[n+2]);
+            mesh_.triangles().push_back(_tri);
+            }
+
+        }
+
+  }
+
+
+  bool  ImpliciteSurface::intersect(Ray& _ray, Vec3f* _normal, Point2f* _texCoords) const
+  {
+
+    if (!boundingBox_.intersect(_ray)) return false;
+    const Voxel* _voxel = NULL;
+
+#define N_STEPS 1000
+    float tDelta = (_ray.tMax_ - _ray.tMin_) / N_STEPS;
+    float t = _ray.tMin_;
+
+    Point3f iPoint = _ray.org_ + t * _ray.dir_;
+    /*
+       for (int i = 0; i < N_STEPS; i++)
+       {
+       Voxel* _voxel = voxel(iPoint);
+
+       if (_voxel)
+       {
+       if (_voxel.empty_) goto incT;
+
+
+
+       }
+
+incT:
+t += tDelta;
+}
+*/
+
+    return false;
+    }
+
+
+/*
+bool ImpliciteSurface::gridTraversal(Ray& ray, Vec3f& _normal) const
+{
+  float tnear = INF, tfar = -INF;
+  Vec3f _tN(tnear,tnear,tnear), _tF(tfar,tfar,tfar);
+
+  for (int i = 0; i < 3; i++)
+  {
+    if (abs(ray.dir[i]) < 0.001) continue;
+
+    float minV = boundingBox_.min[i], maxV = boundingBox_.max[i];
+    if (ray.dir[i] < 0) swap(minV,maxV);
+
+    _tN[i] = (minV - ray.org[i]) / ray.dir[i];
+    _tF[i] = (maxV - ray.org[i]) / ray.dir[i];
+
+    if (_tN[i] < tnear)	tnear = _tN[i];
+    if (_tF[i] > tfar)	tfar = _tF[i];
+  }
+
+  if (tnear < tfar)
+  {
+    ray.tmin = tnear;
+    ray.tmax = tfar;
+  }
+
+  LOG_MSG << fmt("% %") % tnear % tfar;
+
+  if (tnear > tfar) return false;
+  return true;
+}
+*/
+/*
+   typedef struct {
+   XYZ p[3];
+   } TRIANGLE;
+
+   typedef struct {
+   XYZ p[8];
+   double val[8];
+   } GRIDCELL;
+   */
+/*
+   Given a grid cell and an isolevel, calculate the triangular
+   facets required to represent the isosurface through the cell.
+   Return the number of triangular facets, the array "triangles"
+   will be loaded up with the vertices at most 5 triangular facets.
+   0 will be returned if the grid cell is either totally above
+   of totally below the isolevel.
+   */
+
+/*
+   int Polygonise(GRIDCELL grid,double isolevel,TRIANGLE *triangles)
+   {
+   int i,ntriang;
+   int cubeindex;
+   XYZ vertlist[12];
+
+*/
+/*
+   Determine the index into the edge table which
+   tells us which vertices are inside of the surface
+   */
+
+
+
+// Cube is entirely in/out of the surface
+/*if (edgeTable[cubeindex] == 0)
   return(0);
 
-  // Find the vertices where the surface intersects the cube
-  if (edgeTable[cubeindex] & 1)
-  vertlist[0] =
-  VertexInterp(isolevel,grid.p[0],grid.p[1],grid.val[0],grid.val[1]);
-  if (edgeTable[cubeindex] & 2)
-  vertlist[1] =
-  VertexInterp(isolevel,grid.p[1],grid.p[2],grid.val[1],grid.val[2]);
-  if (edgeTable[cubeindex] & 4)
-  vertlist[2] =
-  VertexInterp(isolevel,grid.p[2],grid.p[3],grid.val[2],grid.val[3]);
-  if (edgeTable[cubeindex] & 8)
-  vertlist[3] =
-  VertexInterp(isolevel,grid.p[3],grid.p[0],grid.val[3],grid.val[0]);
-  if (edgeTable[cubeindex] & 16)
-  vertlist[4] =
-  VertexInterp(isolevel,grid.p[4],grid.p[5],grid.val[4],grid.val[5]);
-  if (edgeTable[cubeindex] & 32)
-  vertlist[5] =
-  VertexInterp(isolevel,grid.p[5],grid.p[6],grid.val[5],grid.val[6]);
-  if (edgeTable[cubeindex] & 64)
-  vertlist[6] =
-  VertexInterp(isolevel,grid.p[6],grid.p[7],grid.val[6],grid.val[7]);
-  if (edgeTable[cubeindex] & 128)
-  vertlist[7] =
-  VertexInterp(isolevel,grid.p[7],grid.p[4],grid.val[7],grid.val[4]);
-  if (edgeTable[cubeindex] & 256)
-  vertlist[8] =
-  VertexInterp(isolevel,grid.p[0],grid.p[4],grid.val[0],grid.val[4]);
-  if (edgeTable[cubeindex] & 512)
-  vertlist[9] =
-  VertexInterp(isolevel,grid.p[1],grid.p[5],grid.val[1],grid.val[5]);
-  if (edgeTable[cubeindex] & 1024)
-  vertlist[10] =
-  VertexInterp(isolevel,grid.p[2],grid.p[6],grid.val[2],grid.val[6]);
-  if (edgeTable[cubeindex] & 2048)
-  vertlist[11] =
-  VertexInterp(isolevel,grid.p[3],grid.p[7],grid.val[3],grid.val[7]);
 
-  // Create the triangle
-  ntriang = 0;
-  for (i=0;triTable[cubeindex][i]!=-1;i+=3) {
-  triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i  ]];
-  triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i+1]];
-  triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i+2]];
-  ntriang++;
-  }
 
-  return(ntriang);
-  }
-  */
-  /*
-     Linearly interpolate the position where an isosurface cuts
-     an edge between two vertices, each with their own scalar value
-     */
-  /*
-     XYZ VertexInterp(isolevel,p1,p2,valp1,valp2)
-     double isolevel;
-     XYZ p1,p2;
-     double valp1,valp2;
-     {
-     double mu;
-     XYZ p;
+return(ntriang);
+}
+*/
+/*
+   Linearly interpolate the position where an isosurface cuts
+   an edge between two vertices, each with their own scalar value
+   */
+/*
+   XYZ VertexInterp(isolevel,p1,p2,valp1,valp2)
+   double isolevel;
+   XYZ p1,p2;
+   double valp1,valp2;
+   {
+   double mu;
+   XYZ p;
 
-     if (ABS(isolevel-valp1) < 0.00001)
-     return(p1);
-     if (ABS(isolevel-valp2) < 0.00001)
-     return(p2);
-     if (ABS(valp1-valp2) < 0.00001)
-     return(p1);
-     mu = (isolevel - valp1) / (valp2 - valp1);
-     p.x = p1.x + mu * (p2.x - p1.x);
-     p.y = p1.y + mu * (p2.y - p1.y);
-     p.z = p1.z + mu * (p2.z - p1.z);
+   if (ABS(isolevel-valp1) < 0.00001)
+   return(p1);
+   if (ABS(isolevel-valp2) < 0.00001)
+   return(p2);
+   if (ABS(valp1-valp2) < 0.00001)
+   return(p1);
+   mu = (isolevel - valp1) / (valp2 - valp1);
+   p.x = p1.x + mu * (p2.x - p1.x);
+   p.y = p1.y + mu * (p2.y - p1.y);
+   p.z = p1.z + mu * (p2.z - p1.z);
 
-     return(p);
-     }
-     */
+   return(p);
+   }
+   */
 
 }

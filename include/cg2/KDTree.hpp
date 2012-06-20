@@ -2,112 +2,85 @@
 
 #include "cg2/BoundingBox.hpp"
 
-namespace cg2
-{
+#include <vector>
 
-  template <typename T>
-  struct KDNode
+namespace cg2 
+{
+  template <typename T> struct KDNode
   {
     KDNode(Axis _axis = X, float _splitPos = 0)
     {
       axis = _axis;
       splitPos = _splitPos;
-      left = NULL;
-      right = NULL;
+      left = NULL; right = NULL;
     }
 
-    bool isLeaf() const
-    {
-      return (!left && !right);
-    }
+    bool isLeaf() const { return (!left && !right); }
 
-    KDNode<T> * left;
-    KDNode<T> * right;
+    KDNode<T>* left;
+    KDNode<T>* right;
 
     Axis axis;
     float splitPos;
-    vector<T *> objs;
+    std::vector<T*> objs;
 
-    void free()
-    {
-      if (left)
-      {
-        left->free();
-        delete left;
-        left = NULL;
-      }
-
-      if (right)
-      {
-        right->free();
-        delete right;
-        right = NULL;
-      }
+    void free() 
+    { 
+      left->free(); 
+      delete left; 
+      left = NULL; 
+      right->free();
+      delete right;
+      right = NULL;
     }
 
-    void draw(Color const & color, BoundingBox const & box, int depth, int maxDepth) const
+/*    void draw(Color color, const BoundingBox& box, int depth, int maxDepth) const
     {
-      if (isLeaf() || depth >= maxDepth)
-      {
-        box.draw(color);
-        return;
-      }
+      if (isLeaf() || depth >= maxDepth) { box.draw(color); return; }
 
       BoundingBox boxLeft, boxRight;
       box.split(splitPos,axis,boxLeft,boxRight);
-      if (left)
-      {
-        left->draw(color,boxLeft,depth+1,maxDepth);
-      }
-      if (right)
-      {
-        right->draw(color,boxRight,depth+1,maxDepth);
-      }
+      if (left) left->draw(color,boxLeft,depth+1,maxDepth);
+      if (right) right->draw(color,boxRight,depth+1,maxDepth);
     }
+    */
   };
 
-  template <typename T>
+  template <typename T> 
   struct KDTree
   {
-    KDTree() : root(NULL) {}
+    KDTree() : root_(NULL) {}
 
+  protected:
     typedef KDNode<T> Node;
-    Node * root;
+    Node* root_;
     void clear()
     {
-      if (!root)
-      {
-        return;
-      }
-      root->free();
-      delete root;
-      root = NULL;
+      if (!root_) return;
+      root_->free();
+      delete root_;
+      root_ = NULL;
     }
 
-    void draw(Color const & color, BoundingBox const & box) const
+/*  void draw(Color color, const BoundingBox& box) const
     {
-      if (root)
-      {
-        root->draw(color,box,0,12);
-      }
+      if (root) root->draw(color,box,0,12);
     }
+*/
 
-    void build(vector<T> & objs, BoundingBox & boundingBox)
+     void build(std::vector<T>& objs, const BoundingBox& boundingBox)
     {
       clear();
-      root = new Node;
-      root->objs.reserve(objs.size());
-
+      root_ = new Node;
+      root_->objs.reserve(objs.size());
+      
       for (unsigned i = 0; i < objs.size(); i++)
-      {
-        root->objs.push_back(&objs[i]);
-      }
-
-      divideNode(root,boundingBox,0);
+        root_->objs.push_back(&objs[i]);
+      
+      divideNode(root_,boundingBox,0);
     }
 
-  private:
-    virtual void divideNode(Node * node, BoundingBox & boundingBox, int depth) = 0;
+   virtual void divideNode(Node* node, const BoundingBox& boundingBox, int depth) = 0;
   };
 }
 

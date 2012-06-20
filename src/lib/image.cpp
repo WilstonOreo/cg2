@@ -1,8 +1,11 @@
+#include "cg2/Image.hpp"
+
 #include <stdio.h>
 #include <cstring>
+#include <iostream>
 #include <fstream>
 
-#include "cg2/Image.hpp"
+using namespace std;
 
 namespace cg2
 {
@@ -61,7 +64,7 @@ namespace cg2
     for (unsigned i = 0; i < width()*height(); i++)
     {
       unsigned k = i * 3;
-      data_[i] = Color(rawdata[k], rawdata[k+1], rawdata[k+2]) * (1.0f / 255.0f);
+      data_[i] = Color3f(rawdata[k], rawdata[k+1], rawdata[k+2]) * (1.0f / 255.0f);
     }
 
     width(w);
@@ -79,7 +82,7 @@ namespace cg2
 
     for (unsigned i = 0; i < width()*height(); i++)
     {
-      u8 r = U8(data_[i].x), g = U8(data_[i].y), b = U8(data_[i].z);
+      u8 r = U8(data_[i].r()), g = U8(data_[i].g()), b = U8(data_[i].b());
       os.write(reinterpret_cast<char *>(&r),sizeof(u8));
       os.write(reinterpret_cast<char *>(&g),sizeof(u8));
       os.write(reinterpret_cast<char *>(&b),sizeof(u8));

@@ -18,13 +18,8 @@ QT += opengl
 
 # Input
       HEADERS += include/cg2/BoundingBox.hpp \
-                 include/cg2/Camera.hpp \
-                 include/cg2/FrameBuffer.hpp \
-                 include/cg2/GCode.hpp \
-                 include/cg2/GCodeGenerator.hpp \
                  include/cg2/Image.hpp \
                  include/cg2/KDTree.hpp \
-                 include/cg2/Light.hpp \
                  include/cg2/Median.hpp \
                  include/cg2/Mesh.hpp \
                  include/cg2/MeshReader.hpp \
@@ -35,41 +30,27 @@ QT += opengl
                  include/cg2/OFFWriter.hpp \
                  include/cg2/Plane.hpp \
                  include/cg2/PointCloud.hpp \
-                 include/cg2/PolygonMesh.hpp \
                  include/cg2/Primitive.hpp \
                  include/cg2/Ray.hpp \
-                 include/cg2/Scene.hpp \
                  include/cg2/SceneObject.hpp \
-                 include/cg2/Shader.hpp \
-                 include/cg2/Slice.hpp \
-                 include/cg2/Slicer.hpp \
                  include/cg2/Sphere.hpp \
                  include/cg2/Triangle.hpp \
-                 include/cg2/TriangleMesh.hpp \
                  include/cg2/Vector.hpp \
                  include/cg2/ImpliciteSurface.hpp \
                  include/cg2/Vertex.hpp \
                  include/cg2/PointCloud2D.hpp \
 
                  SOURCES += src/lib/BoundingBox.cpp \
-                            src/lib/Camera.cpp \
                             src/lib/image.cpp \
                             src/lib/Mesh.cpp \
                             src/lib/OFFReader.cpp \
                             src/lib/OFFWriter.cpp \
                             src/lib/Plane.cpp \
                             src/lib/PointCloud.cpp \
-                            src/lib/PolygonMesh.cpp \
                             src/lib/Ray.cpp \
-                            src/lib/scene.cpp \
-                            src/lib/shader.cpp \
-                            src/lib/Slicer.cpp \
                             src/lib/Sphere.cpp \
-                            src/lib/Triangle.cpp \
-                            src/lib/Vector.cpp \
                             src/lib/ImpliciteSurface.cpp \
-                            src/lib/Vertex.cpp \
-                            src/lib/PointCloud2D.cpp
+                            src/lib/Vertex.cpp 
 
 cg2ex1 {
   TARGET = cg2ex1

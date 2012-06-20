@@ -1,12 +1,15 @@
 #pragma once
 
 #include "cg2/Vertex.hpp"
+#include "cg2/Triangle.hpp"
 
-namespace cg2
+namespace cg2 
 {
-  class MeshReader
+  class MeshReader 
   {
   public:
-    virtual void read(std::string filename, vector<Vertex> * vertices = NULL, vector<Polygon> * polygons = NULL) = 0;
+    virtual void read(std::string filename, 
+                      vector<Vertex>* vertices = NULL, 
+                      vector<Triangle>* triangles = NULL) = 0;
   };
 }

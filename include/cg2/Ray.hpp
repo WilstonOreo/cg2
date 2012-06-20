@@ -1,80 +1,48 @@
-#pragma once
+#pragma once 
 #include "cg2/Vector.hpp"
 
 #include <vector>
 
 namespace cg2
 {
-  class Primitive;
+  struct Primitive;
 
   struct Ray
   {
-    Ray(Point3f _org = Point3f(), Vec3f _dir = Vec3f(), float _scrPosX = 0.0, float _scrPosY = 0.0):
-      org(_org), dir(_dir)
-    {
-      tmin = 0.002;
-      tmax = 10000.0;
-      obj = NULL;
-      bounce = 0;
-      u = 0.0;
-      v = 0.0;
-      scrPosX = _scrPosX;
-      scrPosY = _scrPosY;
-    }
+    Ray(const Point3f _org = Point3f(), const Vec3f _dir = Vec3f(), float _tMin = 0.002, float _tMax = INF): 
+      org_(_org), dir_(_dir), primitive_(NULL), tMin_(_tMin), tMax_(_tMax) {  }
 
-    void init(Point3f _org = Point3f(), Vec3f _dir = Vec3f(), float _scrPosX = 0, float _scrPosY = 0)
+    bool intersection(Primitive* _primitive, float _t) 
     {
-      org = _org;
-      dir = _dir;
-      setScreenPos(_scrPosX,_scrPosY);
-    }
-
-    bool t(float _t)
-    {
-      if (_t >= tmin && _t < tmax)
+      if (_t >= tMin_ && _t < tMax_)
       {
-        tmax = _t;
-        return true;
+      primitive_ = _primitive;
+      tMin_ = _t;
+      return true;
       }
       return false;
     }
 
-    string toString();
+    Point3f intersectionPoint() const
+    {
+      return org_ + dir_ * tMin_;
+    }
 
+    void params(Point3f _org, Vec3f _dir) 
+    {
+      org_=_org; dir_=_dir;
+    }
     Ray reflect();
     Ray refract(float index);
 
-    void texCoord(float _u, float _v)
-    {
-      u =_u;
-      v =_v;
-    }
-    void setScreenPos(float _scrPosX, float _scrPosY)
-    {
-      scrPosX = _scrPosX;
-      scrPosY = _scrPosY;
-    }
-    void drawIntersectionPoint();
-    Point3f getIntersectionPoint()
-    {
-      return org + tmax*dir;
-    }
-
-    Point3f org;
-    Vec3f dir;
-    float tmin, tmax;
-    Vec3f normal,color;
-    Primitive * obj;
-    unsigned bounce;
-
-    float u,v;
-
-    float scrPosX, scrPosY;
+    Point3f org_;
+    Vec3f dir_;
+   
+    Primitive* primitive_;
+    float tMin_, tMax_;
   };
 
-  typedef enum { DIR_TOP, DIR_BOTTOM, DIR_LEFT, DIR_RIGHT, DIR_FRONT, DIR_BACK } Direction;
-
-  typedef std::vector<Ray *> RayList;
+  typedef std::vector<Ray*> RayList;
   typedef std::vector<Ray> Rays;
 
 }

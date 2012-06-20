@@ -2,55 +2,31 @@
 
 #include "Primitive.hpp"
 
-namespace cg2
+namespace cg2 
 {
-  struct BoundingBox : public Primitive
+  /** @brief A bounding is primitive which defines bounds of a compound object
+   */
+  struct BoundingBox : public Primitive, public Bounds
   {
-    bool intersect(Ray & ray) const;
-    void set(const Point3f & _min, const Point3f & _max)
-    {
-      min = _min;
-      max = _max;
-      for (int i = 0; i < 3; i++)
-        if (min.cell[i] > max.cell[i])
-        {
-          std::swap(min.cell[i],max.cell[i]);
-        }
-    }
-    void draw(Color const & color = Color()) const;
+    BoundingBox() : Bounds(Point3f(INF,INF,INF),Point3f(-INF,-INF,-INF)) {}
+    BoundingBox(Point3f _min, Point3f _max) : Bounds(_min,_max) {}
 
-    void split(float splitPos, Axis const & axis, BoundingBox & boxLeft, BoundingBox & boxRight) const;
+    bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const;
+    
+    /** @brief Split bounding box in two halves 
+     */
+    void split(float splitPos, Axis axis, BoundingBox& boxLeft, BoundingBox& boxRight) const;
 
-    Vec3f normal(const Ray & ray) const
-    {
-      Q_UNUSED(ray);
-      return Vec3f();
-    }
-    TexCoords texCoords(const Ray & ray) const
-    {
-      Q_UNUSED(ray);
-      return TexCoords();
-    }
+    void draw(const Color4f& _color = Color4f()) const;
 
+    Bounds bounds() const { return Bounds(min(),max()); }
 
+    /** @brief Return axis which largest extent
+     */
     Axis dominantAxis() const;
-
-    bool pointInBox(Point3f const & p) const;
-
-    Point3f center() const
-    {
-      Point3f p((max.x + min.x)*0.5,(max.y + min.y)*0.5,(max.z + min.z)*0.5);
-      return p;
-    }
-
-    std::vector<Point3f> corners() const;
-
-    Vec3f size() const
-    {
-      return max-min;
-    }
-
-    // Bounding box points
-    Point3f min, max;
+    
+    /** @brief Test if point is in box
+     */
+    bool pointInBox(Point3f p) const;
   };
 }

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "cg2/Vector.hpp"
+#include "cg2/Color.hpp"
 #include "cg2/misc.hpp"
 
 #include <vector>
+#include <string>
 
 namespace cg2
 {
   using std::vector;
-  typedef Vec3f Color;
 
   struct Image
   {
@@ -32,26 +32,26 @@ namespace cg2
       data_.resize(_width*_height);
       for (size_t i = 0; i < data_.size(); i++)
       {
-        data_[i] = Color();
+        data_[i] = Color3f();
       }
     }
 
-    inline Color & operator()(int x, int y)
+    inline Color3f & operator()(int x, int y)
     {
       return data_[x + y*width_];
     }
 
-    inline const Color & operator()(int x, int y) const
+    inline const Color3f & operator()(int x, int y) const
     {
       return data_[x + y*width_];
     }
 
-    inline const Color & get(int x, int y)
+    inline const Color3f & get(int x, int y)
     {
       return data_[x + y*width_];
     }
 
-    inline void set(int x, int y, Color color)
+    inline void set(int x, int y, Color3f color)
     {
       data_[x + y*width_] = color;
     }
@@ -63,7 +63,7 @@ namespace cg2
 
     TBD_PROPERTY(unsigned,width);
     TBD_PROPERTY(unsigned,height);
-    TBD_PROPERTY_REF(vector<Color>,data);
+    TBD_PROPERTY_REF(vector<Color3f>,data);
   };
 }
 
