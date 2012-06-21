@@ -31,7 +31,7 @@ namespace cg2
     protected:
       /* @brief Determine extents of bounding box
        */
-      void calcBoundingBox()
+      virtual void calcBoundingBox()
       {
         boundingBox_ = BoundingBox();
         BOOST_FOREACH ( PRIMITIVE& _obj , objs_ ) 

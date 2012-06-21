@@ -24,7 +24,7 @@ namespace cg2
 
     Voxel* voxel(unsigned _posX, unsigned _posY, unsigned _posZ)
     {
-      return &voxels_[ ( _posY * x_ + _posX ) * z_ + _posZ   ];
+      return &voxels_[ ( _posZ * y_ + _posY ) * x_ + _posX  ];
     }
 
     const Voxel* voxel(unsigned _posX, unsigned _posY, unsigned _posZ) const

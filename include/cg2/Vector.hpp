@@ -200,7 +200,7 @@ namespace cg2
   typedef Point<3,float> Point3f;
   //typedef Matrix<float> Matrix4f;
 
-  #define COORDS(C) C.x(),C.y(),C.y() 
+  #define COORDS(C) C.x(),C.y(),C.z() 
 }
 
 #endif /* _VECTOR_HPP */

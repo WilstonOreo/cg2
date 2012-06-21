@@ -12,12 +12,16 @@ namespace cg2
 
   void ImpliciteSurface::calcBoundingBox()
   {
+    LOG_MSG << "Calculating bounding box...";
     PointCloud::calcBoundingBox();
-    Point3f _halfVoxelSize(boundingBox_.size().x()/x_*0.5,
-                           boundingBox_.size().y()/y_*0.5,
-                           boundingBox_.size().z()/z_*0.5);
-    boundingBox_.min() -= _halfVoxelSize;
-    boundingBox_.max() += _halfVoxelSize;
+    Point3f _halfVoxelSize(2*boundingBox_.size().x()/x_,
+                           2*boundingBox_.size().y()/y_,
+                           2*boundingBox_.size().z()/z_);
+
+    Point3f _mH(-_halfVoxelSize.x(),-_halfVoxelSize.y(),-_halfVoxelSize.z());
+    
+    boundingBox_.min(boundingBox_.min() + _mH);
+    boundingBox_.max(boundingBox_.max() + _halfVoxelSize); 
     epsilon_ = boundingBox_.size().length() * 0.01;
   }
 
@@ -186,7 +190,7 @@ namespace cg2
       {
         Vec3f _p   = _vertex->v - _voxel.center_;
         float dist = _p.length();
-        float _weight = wendland(dist,radius);
+        float _weight = wendland(dist,radius/2);
 
         _voxel.f_ += _p.dot(_vertex->n) * _weight ;
         _voxel.n_ += _vertex->n * _weight;
@@ -537,13 +541,13 @@ namespace cg2
           int _emptySum = 0;
           for (int i = 0; i < 8; i++)
           {
-            _voxels[i] = voxel(x+(i & 2)/2,y+(i & 4)/4,z+(i & 1));
+            _voxels[i] = voxel(x+(i & 1)/1,y+(i & 2)/2,z+(i & 4)/4);
             
             _emptySum += int(_voxels[i]->empty_);
             if (_voxels[i]->f_ < 0) _cubeIndex |= (1 << i);
           }
 
-          if (_emptySum > 0) goto nextVoxel;
+          if (_emptySum > 0) continue;
 
           for (int i = 0; i < 12; i++) 
           {
@@ -565,8 +569,6 @@ namespace cg2
             VertexTriangle _tri(&mesh_.vertices_[n  ],&mesh_.vertices_[n+1],&mesh_.vertices_[n+2]);
             mesh_.triangles().push_back(_tri);
           }
-
-    nextVoxel: continue;
         }
 
   }
