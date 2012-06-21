@@ -522,10 +522,17 @@ namespace cg2
     return v;
   }
 
+static const GLfloat a2fVertexOffset[8][3] =
+{
+        {0.0, 0.0, 0.0},{1.0, 0.0, 0.0},{1.0, 1.0, 0.0},{0.0, 1.0, 0.0},
+        {0.0, 0.0, 1.0},{1.0, 0.0, 1.0},{1.0, 1.0, 1.0},{0.0, 1.0, 1.0}
+};
+
   void ImpliciteSurface::marchingCubes()
   {
     mesh_.triangles().clear();
     mesh_.vertices_.clear();
+    mesh_.vertices_.reserve(x_*y_*z_*15);
 
     int idx1[12] = { 0,1,2,3,4,5,6,7,0,1,2,3 };
     int idx2[12] = { 1,2,3,0,5,6,7,4,4,5,6,7 };
@@ -537,13 +544,15 @@ namespace cg2
           int _cubeIndex = 0;
           Voxel* _voxels[8];      
           Vertex vertList[12];
+          for (int i = 0; i < 12; i++) vertList[i] = Vertex();
 
           int _emptySum = 0;
           for (int i = 0; i < 8; i++)
           {
-            _voxels[i] = voxel(x+(i & 1)/1,y+(i & 2)/2,z+(i & 4)/4);
+            const GLfloat *foo = &a2fVertexOffset[i][0];
+            _voxels[i] = voxel(x + foo[0], y + foo[1], z + foo[2]);
             
-            _emptySum += int(_voxels[i]->empty_);
+            if (_voxels[i]->empty_) _emptySum++;
             if (_voxels[i]->f_ < 0) _cubeIndex |= (1 << i);
           }
 
@@ -557,7 +566,7 @@ namespace cg2
            // LOG_MSG << fmt("% % %")  % vertList[i].n.x() % vertList[i].n.y() % vertList[i].n.z();
           }
  
-          for (int i = 0;  i < triTable[_cubeIndex][i]!=-1; i += 3)
+          for (int i = 0; i < 16; i += 3)
           {
             if (triTable[_cubeIndex][i] == -1) break;
 
