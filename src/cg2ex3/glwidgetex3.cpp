@@ -48,6 +48,7 @@ void GLWidgetEx3::setDrawGrid(int state)
 void GLWidgetEx3::setRenderMode(int mode)
 {
   renderMode = mode;
+  recalc();
   updateGL();
 }
 
