@@ -280,7 +280,7 @@ void GLWidgetEx3::paintGL()
   glRotatef(yaw, 0, 1, 0);
   glTranslatef(-center.x(),-center.y(),-center.z());
 
-  if (drawGrid) impliciteSurface.drawGrid(cg2::Color4f(0.2,0.2,0.2));
+  if (drawGrid) impliciteSurface.drawGrid(cg2::Color4f(0.4,0.4,0.4,0.2));
 
   switch (renderMode)
   {
@@ -301,6 +301,24 @@ void GLWidgetEx3::paintGL()
     break;
 
   case 2:
+    glEnable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE);
+
+
+    if (pointSizeGrid)
+    {
+      glPointSize(pointSizeGrid);
+      impliciteSurface.drawValues(cg2::Color4f(0.0,0.5,1.0),lightPos_,false);
+    }
+
+    glDisable(GL_LIGHTING);
+    glEnable(GL_CULL_FACE);
+
+
+    break;
+
+  case 3:
+
     glEnable(GL_LIGHTING);
     glPolygonMode(GL_BACK, GL_LINE);
     glPolygonMode(GL_FRONT, GL_FILL);

@@ -117,7 +117,7 @@ namespace cg2
   {
     void read(const std::string& filename) {}
     std::vector<Vertex> vertices_;
-    void draw(const Color4f& _color = Color4f()) const {} // TODO
+    void draw(const Color4f& _color = Color4f()) const;
   };
 
   /** @brief Mesh which consists of individual triangles 

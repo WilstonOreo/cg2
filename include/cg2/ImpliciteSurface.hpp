@@ -24,12 +24,12 @@ namespace cg2
 
     Voxel* voxel(unsigned _posX, unsigned _posY, unsigned _posZ)
     {
-      return &voxels_[ (( y_ * _posZ ) + _posY)  * x_ + _posX];
+      return &voxels_[ ( _posY * x_ + _posX ) * z_ + _posZ   ];
     }
 
     const Voxel* voxel(unsigned _posX, unsigned _posY, unsigned _posZ) const
     {
-      return &voxels_[ (( y_ * _posZ ) + _posY)  * x_ + _posX];
+      return &voxels_[ ( _posZ * y_ + _posY ) * x_ + _posX  ];
     }
 
     const Voxel* voxel(const Point3f& _point) const
@@ -62,7 +62,7 @@ namespace cg2
 
     void draw(const Color4f& color = Color4f()) const;
     void drawPoints(const Color4f& color, Point3f _lightPos) const;
-    void drawValues(const Color4f& color, Point3f _lightPos) const;
+    void drawValues(const Color4f& color, Point3f _lightPos, bool _drawEmpty = true) const;
     void drawGrid(const Color4f& color = Color4f()) const;
 
     bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const;

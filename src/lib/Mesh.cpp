@@ -11,6 +11,12 @@ using namespace std;
 
 namespace cg2
 {
+  void VertexMesh::draw(const Color4f& _color) const
+  {
+    BOOST_FOREACH ( const VertexTriangle& tri, objs_ )
+      tri.draw(_color);
+  }
+  
   void TriangleMesh::read(const string& filename)
   {
     OFFReader off;

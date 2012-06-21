@@ -163,7 +163,7 @@ namespace cg2
   void PointCloud::read(const string& filename)
   {
     OFFReader off;
-    off.read(filename,&this->objs_,NULL);
+ //   off.read(filename,&this->objs_,NULL);
     update();
   }
 

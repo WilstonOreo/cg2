@@ -42,7 +42,7 @@ namespace cg2
     glEnd();
   }
 
-  void ImpliciteSurface::drawValues(const Color4f& _color, Point3f _lightPos) const
+  void ImpliciteSurface::drawValues(const Color4f& _color, Point3f _lightPos, bool _drawEmpty) const
   {
     glBegin(GL_POINTS);
 
@@ -62,8 +62,12 @@ namespace cg2
       if (_c.r() > 1.0) _c.r(1.0);
       if (_c.g() > 1.0) _c.g(1.0);
 
-      glColor4f(_c.r(),_c.g(),_c.b(),_c.a());
-      glVertex3f(voxel.center_.x(),voxel.center_.y(),voxel.center_.z());
+      if (!voxel.empty_ || _drawEmpty)
+      {
+        glColor4f(_c.r(),_c.g(),_c.b(),_c.a());
+        glNormal3f(voxel.n_.x(),voxel.n_.y(),voxel.n_.z());
+        glVertex3f(voxel.center_.x(),voxel.center_.y(),voxel.center_.z());
+      }
     }
     glEnd();
 
@@ -88,20 +92,21 @@ namespace cg2
     LOG_MSG << fmt("Reading % ...") % filename;
     OFFReader off;
 
-    vector<Triangle> _triangles;
-/*    off.read(filename,&vertices(),&_triangles);
+    vector<VertexTriangle> _triangles;
+    off.read(filename,&objs(),&_triangles);
 
     // Calculate Normals
-    BOOST_FOREACH(Triangle& , _triangles)
+    BOOST_FOREACH(VertexTriangle& tri, _triangles)
     {
       // TODO make 
-      Vec3f n = polygon.normal();
-      BOOST_FOREACH(Vertex* vertex, polygon.vertices)
-        vertex->n -= n;
+      Vec3f n = (tri.v2() - tri.v0()).cross(tri.v1() - tri.v0()).normalized(); 
+      tri.vtx0()->n += n;
+      tri.vtx1()->n += n;
+      tri.vtx2()->n += n;
     }
-    BOOST_FOREACH(Vertex& vertex, vertices)
+    BOOST_FOREACH(Vertex& vertex, objs())
       vertex.n.normalize();
-*/
+
     PointCloud::update();
 
     calcBoundingBox();
@@ -172,7 +177,7 @@ namespace cg2
 
     BOOST_FOREACH( Voxel& _voxel, voxels_ )
     {
-      std::set<const Vertex*> _vertices = PointCloud::collectInRadius(_voxel.center_,radius);
+      std::set<const Vertex*> _vertices = PointCloud::collectInRadius(_voxel.center_,1.5*radius);
       _voxel.f_ = 0;
       _voxel.n_(0.0,0.0,0.0);
 
@@ -193,7 +198,7 @@ namespace cg2
       if (!_voxel.empty_)
       {
         _voxel.f_ /= _weightSum;
-        _voxel.n_ *= (1.0 / _weightSum);
+        _voxel.n_ *= (-1.0 / _weightSum);
         _voxel.n_.normalize();
       }
       else
@@ -500,11 +505,11 @@ namespace cg2
 
   Vertex ImpliciteSurface::vertexInterp(Voxel* _a, Voxel* _b)
   { 
-    Point3f _p0 = _a->center_, _p1 = _b->center_; 
-    Vec3f  _n0 = _a->n_, _n1 = _b->n_;
+    Point3f _p0 = _b->center_, _p1 = _a->center_; 
+    Vec3f  _n0 = _b->n_, _n1 = _a->n_;
 
-    float _val0 = _a->f_, _val1 = _b->f_;
-    float mu = -_val0 / ( _val1 - _val1 );
+    float _val0 = _b->f_, _val1 = _a->f_;
+    float mu = _val0 / ( _val0 - _val1 );
 
     Vertex v;
     v.v = _p0 + mu * (_p1 - _p0);
@@ -518,30 +523,40 @@ namespace cg2
     mesh_.triangles().clear();
     mesh_.vertices_.clear();
 
+    int idx1[12] = { 0,1,2,3,4,5,6,7,0,1,2,3 };
+    int idx2[12] = { 1,2,3,0,5,6,7,4,4,5,6,7 };
+
     for (unsigned x = 0; x < x_-1; x++)
       for (unsigned y = 0; y < y_-1; y++)
         for (unsigned z = 0; z < z_-1; z++)
         {
           int _cubeIndex = 0;
-          Voxel* _voxels[8];
+          Voxel* _voxels[8];      
+          Vertex vertList[12];
 
+          int _emptySum = 0;
           for (int i = 0; i < 8; i++)
           {
-            _voxels[i] = voxel(x+(i & 4),y+(i & 2),z+(i & 1));
+            _voxels[i] = voxel(x+(i & 2),y+(i & 4),z+(i & 1));
+            
+            _emptySum += int(_voxels[i]->empty_);
             if (_voxels[i]->f_ < 0) _cubeIndex |= (1 << i);
           }
 
-          Vertex vertList[12];
-          int idx1[12] = { 0,1,2,3,4,5,6,7,0,1,2,3 };
-          int idx2[12] = { 1,2,3,0,5,6,7,4,4,5,6,7 };
+          if (_emptySum == 8) goto nextVoxel;
 
-          for (int i = 0; i < 12; i++) {
+          for (int i = 0; i < 12; i++) 
+          {
             if (edgeTable[_cubeIndex] & (1 << i)) 
               vertList[i] = vertexInterp(_voxels[idx1[i]],_voxels[idx2[i]]);
+          
+           // LOG_MSG << fmt("% % %")  % vertList[i].n.x() % vertList[i].n.y() % vertList[i].n.z();
           }
  
           for (int i = 0;  i < triTable[_cubeIndex][i]!=-1; i += 3)
           {
+            if (triTable[_cubeIndex][i] == -1) break;
+
             size_t n = mesh_.vertices_.size();
             mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i  ]]);
             mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i+1]]);
@@ -549,8 +564,9 @@ namespace cg2
   
             VertexTriangle _tri(&mesh_.vertices_[n  ],&mesh_.vertices_[n+1],&mesh_.vertices_[n+2]);
             mesh_.triangles().push_back(_tri);
-            }
+          }
 
+    nextVoxel: continue;
         }
 
   }

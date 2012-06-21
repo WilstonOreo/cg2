@@ -8,5 +8,6 @@ namespace cg2
   {
     public:
       void read(std::string filename, vector<Vertex>* vertices = NULL, vector<Triangle>* triangles = NULL);
+      void read(std::string filename, vector<Vertex>* vertices, vector<VertexTriangle>* triangles);
   };
 }

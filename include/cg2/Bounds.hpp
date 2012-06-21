@@ -9,6 +9,7 @@ namespace cg2
 {
   struct Bounds 
   {
+    Bounds() { min_ = Point3f(INF,INF,INF); max_ = Point3f(-INF,-INF,-INF); }
     Bounds(Point3f _min, Point3f _max) { this->operator()(_min,_max); }
 
     void operator()(const Point3f& _min, const Point3f& _max);  

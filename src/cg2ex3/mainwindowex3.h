@@ -12,7 +12,7 @@ private:
   class QDockWidget * uiRenderSettings;
 
   class QCheckBox * uiRenderGrid;
-  class QRadioButton * uiRenderMode[3];
+  class QRadioButton * uiRenderMode[4];
 
   class QDoubleSpinBox * uiPointSizeSource;
   class QLabel * uiPointSizeSourceLabel;

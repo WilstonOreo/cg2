@@ -26,6 +26,7 @@ namespace cg2
     void Bounds::validate()
     {
       FOREACH_AXIS 
+        if (min_[axis] != INF && max_[axis] != -INF)
         if (min_[axis] > max_[axis]) 
           std::swap(min_[axis],max_[axis]);
     }
@@ -35,9 +36,8 @@ namespace cg2
       FOREACH_AXIS
       {
         min_[axis] = std::min(_bounds.min_[axis],min_[axis]);
-        max_[axis] = std::min(_bounds.max_[axis],max_[axis]);
+        max_[axis] = std::max(_bounds.max_[axis],max_[axis]);
       }
-      validate();
     }
 
     Vec3f Bounds::size() const { return max_ - min_; }

@@ -54,14 +54,16 @@ void MainWindowEx3::setupUi()
   layout->addWidget(uiRenderMode[0], 6, 0, 1, 2);
   uiRenderMode[1] = new QRadioButton("Render function values");
   layout->addWidget(uiRenderMode[1], 7, 0, 1, 2);
-  uiRenderMode[2] = new QRadioButton("Render polygons");
+  uiRenderMode[2] = new QRadioButton("Render function values with normals");
   layout->addWidget(uiRenderMode[2], 8, 0, 1, 2);
+  uiRenderMode[3] = new QRadioButton("Render polygons");
+  layout->addWidget(uiRenderMode[3], 9, 0, 1, 2);
 
   uiRaytraceBtn = new QPushButton("Raytrace");
-  layout->addWidget(uiRaytraceBtn, 9,0, 1,2);
+  layout->addWidget(uiRaytraceBtn, 10,0, 1,2);
 
   uiSpheretraceBtn = new QPushButton("Sphere trace");
-  layout->addWidget(uiSpheretraceBtn, 10,0, 1,2);
+  layout->addWidget(uiSpheretraceBtn, 11,0, 1,2);
 
   class QButton * uiSpheretraceBtn;
 
@@ -87,7 +89,7 @@ MainWindowEx3::MainWindowEx3(QMainWindow * parent) : QMainWindow(parent)
   connect(uiSpheretraceBtn,SIGNAL(clicked()), glWidget, SLOT(spheretrace()));
 
   QSignalMapper * qsm = new QSignalMapper(this);
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 4; ++i)
   {
     qsm->setMapping(uiRenderMode[i], i);
     connect(uiRenderMode[i],SIGNAL(clicked()), qsm, SLOT(map()));

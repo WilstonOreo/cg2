@@ -106,6 +106,10 @@ namespace cg2
     const Point3f& v0() const { return v[0]->v; }
     const Point3f& v1() const { return v[1]->v; }
     const Point3f& v2() const { return v[2]->v; }
+    Vertex* vtx0() { return v[0]; }
+    Vertex* vtx1() { return v[1]; }
+    Vertex* vtx2() { return v[2]; }
+
     const Vec3f normal(Point2f* _texCoords = NULL) const 
     { 
       if (_texCoords)

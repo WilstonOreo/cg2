@@ -24,6 +24,10 @@ namespace cg2
         return Bounds(boundingBox_.min(),boundingBox_.max());
       }
 
+      std::vector<PRIMITIVE>& objs() { return Compound<PRIMITIVE>::objs_; }
+      const std::vector<PRIMITIVE>& objs() const { return Compound<PRIMITIVE>::objs_; }
+
+
     protected:
       /* @brief Determine extents of bounding box
        */
@@ -32,6 +36,7 @@ namespace cg2
         boundingBox_ = BoundingBox();
         BOOST_FOREACH ( PRIMITIVE& _obj , objs_ ) 
           boundingBox_.extend(_obj.bounds());
+        boundingBox_.validate();
       }
 
       /// Bounds are caches by a bounding box
