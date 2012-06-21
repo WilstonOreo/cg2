@@ -575,7 +575,11 @@ static const GLfloat a2fVertexOffset[8][3] =
             mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i+1]]);
             mesh_.vertices_.push_back(vertList[triTable[_cubeIndex][i+2]]);
   
-            VertexTriangle _tri(&mesh_.vertices_[n  ],&mesh_.vertices_[n+1],&mesh_.vertices_[n+2]);
+            VertexTriangle _tri(
+              &mesh_.vertices_[n  ],
+              &mesh_.vertices_[n+1],
+              &mesh_.vertices_[n+2]
+            );
             mesh_.triangles().push_back(_tri);
           }
         }

@@ -96,10 +96,12 @@ MainWindowEx3::MainWindowEx3(QMainWindow * parent) : QMainWindow(parent)
   }
   connect(qsm,SIGNAL(mapped(int)), glWidget, SLOT(setRenderMode(int)));
 
+  
+  uiRenderGrid->setChecked(false);
   uiPointSizeSource->setValue(2);
 
   uiPointSizeGrid->setValue(1);
-  uiGridSize->setValue(17);
+  uiGridSize->setValue(16);
 
   uiRenderMode[1]->click();
 }

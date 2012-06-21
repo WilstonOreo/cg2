@@ -8,10 +8,10 @@ namespace cg2
   {
     glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
     glBegin(GL_TRIANGLES);
-      glNormal3fv(n_.p());
-      glVertex3fv(v0().p());
-      glVertex3fv(v1().p());
-      glVertex3fv(v2().p());
+      glNormal3f(COORDS(n_));
+      glVertex3f(COORDS(v0()));
+      glVertex3f(COORDS(v1()));
+      glVertex3f(COORDS(v2()));
     glEnd();
   }
 
@@ -19,12 +19,12 @@ namespace cg2
   {
     glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
     glBegin(GL_TRIANGLES);
-      glNormal3fv(v[0]->n.p());
-      glVertex3fv(v[0]->v.p());
-      glNormal3fv(v[1]->n.p());
-      glVertex3fv(v[1]->v.p());
-      glNormal3fv(v[2]->n.p());
-      glVertex3fv(v[2]->v.p());
+      glNormal3f(COORDS(v[0]->n));
+      glVertex3f(COORDS(v[0]->v));
+      glNormal3f(COORDS(v[1]->n));
+      glVertex3f(COORDS(v[1]->v));
+      glNormal3f(COORDS(v[2]->n));
+      glVertex3f(COORDS(v[2]->v));
     glEnd();
 
   }
