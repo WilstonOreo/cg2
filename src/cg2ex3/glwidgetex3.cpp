@@ -325,6 +325,7 @@ void GLWidgetEx3::paintGL()
     glPolygonMode(GL_FRONT, GL_FILL);
     glDisable(GL_CULL_FACE);
 
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos_.p());
     impliciteSurface.draw(Color4f(1,1,1));
 
     break;
@@ -336,10 +337,12 @@ void GLWidgetEx3::paintGL()
 // mouse motion
 void GLWidgetEx3::mouseMoveEvent(QMouseEvent * event)
 {
-  if (event->buttons() != Qt::NoButton)
+  int dx = event->x() - old_x;
+  int dy = event->y() - old_y;
+  if (event->buttons() == Qt::LeftButton)
   {
-    yaw += event->x() - old_x;
-    pitch += event->y() - old_y;
+    yaw += dx;
+    pitch += dy;
     if (pitch > 90)
     {
       pitch = 90;
@@ -350,9 +353,26 @@ void GLWidgetEx3::mouseMoveEvent(QMouseEvent * event)
     }
     updateGL();
 
-    old_x = event->x();
-    old_y = event->y();
   }
+  if (event->buttons() == Qt::RightButton)
+  {
+    lightYaw += dx;
+    lightPitch += dy;
+    if (lightPitch > 90)
+    {
+      lightPitch = 90;
+    }
+    if (lightPitch < -90)
+    {
+      lightPitch = -90;
+    }
+    
+    lightPos_(cos(lightYaw*0.017453292)*6, 4, sin(lightYaw*0.017453292)*6);
+    
+    updateGL();
+  }
+  old_x = event->x();
+  old_y = event->y();
 }
 
 // mouse callback

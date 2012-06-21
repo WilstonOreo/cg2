@@ -37,6 +37,7 @@ private:
   // last mouse position in window
   int old_x, old_y;
   float yaw, pitch;
+  float lightYaw, lightPitch;
 
   cg2::Point3f lightPos_;
 
