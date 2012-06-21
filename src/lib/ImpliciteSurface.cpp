@@ -177,7 +177,7 @@ namespace cg2
 
     BOOST_FOREACH( Voxel& _voxel, voxels_ )
     {
-      std::set<const Vertex*> _vertices = PointCloud::collectInRadius(_voxel.center_,1.5*radius);
+      std::set<const Vertex*> _vertices = PointCloud::collectInRadius(_voxel.center_,2*radius);
       _voxel.f_ = 0;
       _voxel.n_(0.0,0.0,0.0);
 
@@ -505,10 +505,10 @@ namespace cg2
 
   Vertex ImpliciteSurface::vertexInterp(Voxel* _a, Voxel* _b)
   { 
-    Point3f _p0 = _b->center_, _p1 = _a->center_; 
-    Vec3f  _n0 = _b->n_, _n1 = _a->n_;
+    Point3f _p0 = _a->center_, _p1 = _b->center_; 
+    Vec3f  _n0 = _a->n_, _n1 = _b->n_;
 
-    float _val0 = _b->f_, _val1 = _a->f_;
+    float _val0 = _a->f_, _val1 = _b->f_;
     float mu = _val0 / ( _val0 - _val1 );
 
     Vertex v;
@@ -537,13 +537,13 @@ namespace cg2
           int _emptySum = 0;
           for (int i = 0; i < 8; i++)
           {
-            _voxels[i] = voxel(x+(i & 2),y+(i & 4),z+(i & 1));
+            _voxels[i] = voxel(x+(i & 2)/2,y+(i & 4)/4,z+(i & 1));
             
             _emptySum += int(_voxels[i]->empty_);
             if (_voxels[i]->f_ < 0) _cubeIndex |= (1 << i);
           }
 
-          if (_emptySum == 8) goto nextVoxel;
+          if (_emptySum > 0) goto nextVoxel;
 
           for (int i = 0; i < 12; i++) 
           {

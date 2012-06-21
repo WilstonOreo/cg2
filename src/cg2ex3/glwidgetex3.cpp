@@ -320,18 +320,12 @@ void GLWidgetEx3::paintGL()
   case 3:
 
     glEnable(GL_LIGHTING);
-    glPolygonMode(GL_BACK, GL_LINE);
+    glPolygonMode(GL_BACK, GL_FILL);
     glPolygonMode(GL_FRONT, GL_FILL);
     glDisable(GL_CULL_FACE);
 
     impliciteSurface.draw(Color4f(1,1,1));
 
-    glDisable(GL_LIGHTING);
-    glPolygonMode(GL_FRONT, GL_LINE);
-    glColor4f(0,0,0,0.125);
-    glEnable(GL_CULL_FACE);
-
-    impliciteSurface.draw(Color4f(0.25,0.25,0.25));
     break;
   }
 }
