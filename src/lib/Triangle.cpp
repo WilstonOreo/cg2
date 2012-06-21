@@ -4,7 +4,7 @@
 
 namespace cg2
 {
-  Triangle::draw(const Color4f& _color) const
+  void Triangle::draw(const Color4f& _color) const
   {
     glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
     glBegin(GL_TRIANGLES);
@@ -15,7 +15,7 @@ namespace cg2
     glEnd();
   }
 
-  VertexTriangle::draw(const Color4f& _color) const
+  void VertexTriangle::draw(const Color4f& _color) const
   {
     glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
     glBegin(GL_TRIANGLES);

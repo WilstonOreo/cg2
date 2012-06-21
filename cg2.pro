@@ -50,7 +50,9 @@ QT += opengl
                             src/lib/Ray.cpp \
                             src/lib/Sphere.cpp \
                             src/lib/ImpliciteSurface.cpp \
-                            src/lib/Vertex.cpp 
+                            src/lib/Vertex.cpp \ 
+                            src/lib/Bounds.cpp \
+                            src/lib/Triangle.cpp
 
 cg2ex1 {
   TARGET = cg2ex1

@@ -55,7 +55,7 @@ namespace cg2
         BoundingBox boxLeft, boxRight;
         box.split(node->splitPos,node->axis,boxLeft,boxRight);
 
-        BOOST_FOREACH( Triangle* tri, node->objs )
+        BOOST_FOREACH( TRIANGLE* tri, node->objs )
         {
           int result = tri->intersect(node->splitPos,node->axis);
           if (result & 1) node->left->objs.push_back(tri);
@@ -80,7 +80,7 @@ namespace cg2
       {
         if (node->isLeaf())
         {
-          BOOST_FOREACH( Triangle* tri, node->objs )
+          BOOST_FOREACH( TRIANGLE* tri, node->objs )
             if (tri != ray.primitive_) found |= (tri->intersect(ray,_normal,_texCoords));
           return ray.tMax_;
         }
@@ -88,8 +88,8 @@ namespace cg2
         int k = node->axis;
         float d = (node->splitPos - ray.org_[k]) / ray.dir_[k];
 
-        KDNode<Triangle>* front = node->left;
-        KDNode<Triangle>* back  = node->right;
+        KDNode<TRIANGLE>* front = node->left;
+        KDNode<TRIANGLE>* back  = node->right;
         if (ray.dir_[k] < 0) std::swap(front,back); 
 
         if (d <= tnear)

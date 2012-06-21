@@ -93,13 +93,13 @@ std::vector<cg2::Ray> GLWidgetEx3::generateRays()
     for (int x = 0; x < w; x++)
     {
       Ray* ray = &_rays[y*w+x];
-      ray->org = rayOrg;
-      ray->tmin = 0; ///screenMotion.znear;
-      ray->tmax = INF;
+      ray->org_ = rayOrg;
+      ray->tMin_ = 0; ///screenMotion.znear;
+      ray->tMax_ = INF;
 
       float diffX = float(x)*invW;
       for (int i = 0; i < 3; i++)
-        ray->dir[i] = rayDirTopLeft[i]+diffX*rayDirTopRight[i]
+        ray->dir_[i] = rayDirTopLeft[i]+diffX*rayDirTopRight[i]
                       +diffY*rayDirBottomLeft[i];
       //ray->dir *= ray->tmax / 100000.0;
     }
@@ -120,21 +120,21 @@ void GLWidgetEx3::raytrace()
     for (int x = 0; x < w; x++)
     {
       Ray& ray = _rays[y*w+x];
-      image.set(x,y,Color(0,0,0));
+      image.set(x,y,Color3f(0,0,0));
       Vec3f normal;
 
-      if (impliciteSurface.intersect(ray,normal))
+      if (impliciteSurface.intersect(ray,&normal))
       {
         normal.normalize();
-        Point3f iPoint = ray.org + ray.tmin * ray.dir;
+        Point3f iPoint = ray.org_ + ray.tMin_ * ray.dir_;
 
         float invlightDist = 1.0f / (lightPos_ - iPoint).length();
         Vec3f L = (lightPos_ - iPoint).normalized();
-        Color color(0.1,0.1,0.1);
-        float angle = normal * L;
+        Color3f color(0.1,0.1,0.1);
+        float angle = normal.dot(L);
         if (angle < 0.0) angle = 0.0;
 
-        color += Vec3f(angle,angle,angle);
+        color += Color3f(angle,angle,angle);
         image.set(x,y,color);
       }
     }
@@ -187,7 +187,7 @@ void GLWidgetEx3::initializeGL()
   GLfloat model_ambient[] = { 0.3, 0.3, 0.3 };
   GLfloat light_position[] = { 0.0, 0.0, 2.0, 1.0 };
 
-  lightPos_.set(0.0,4.0,6.0);
+  lightPos_(0.0,4.0,6.0);
 
 
   /*glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
@@ -229,7 +229,7 @@ void GLWidgetEx3::resizeGL(int w, int h)
   GLdouble centerZ= 0;
   // set camera parameters
   GLdouble eyeX=0;
-  GLdouble eyeZ=-1.5*impliciteSurface.boundingBox_.size().length();
+  GLdouble eyeZ=-1.5*impliciteSurface.bounds().size().length();
   GLdouble eyeY=0;
   GLdouble upX=0;
   GLdouble upZ=0;
@@ -271,16 +271,16 @@ Point3f unProject(QPoint const & pos)
 
 void GLWidgetEx3::paintGL()
 {
-  cg2::Vec3f center = 0.5*(impliciteSurface.boundingBox_.max.vec3f() + impliciteSurface.boundingBox_.min.vec3f());
+  cg2::Vec3f center = 0.5*(impliciteSurface.bounds().max().vec() + impliciteSurface.bounds().min().vec());
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glLoadIdentity();
   glRotatef(pitch, 1, 0, 0);
   glRotatef(yaw, 0, 1, 0);
-  glTranslatef(-center.x,-center.y,-center.z);
+  glTranslatef(-center.x(),-center.y(),-center.z());
 
-  if (drawGrid) impliciteSurface.drawGrid(cg2::Color(0.2,0.2,0.2));
+  if (drawGrid) impliciteSurface.drawGrid(cg2::Color4f(0.2,0.2,0.2));
 
   switch (renderMode)
   {
@@ -288,7 +288,7 @@ void GLWidgetEx3::paintGL()
     if (pointSizeGrid)
     {
       glPointSize(pointSizeGrid);
-      impliciteSurface.drawPoints(cg2::Color(0.0,0.5,1.0),lightPos_);
+      impliciteSurface.drawPoints(cg2::Color4f(0.0,0.5,1.0),lightPos_);
     }
     break;
 
@@ -296,7 +296,7 @@ void GLWidgetEx3::paintGL()
     if (pointSizeGrid)
     {
       glPointSize(pointSizeGrid);
-      impliciteSurface.drawValues(cg2::Color(0.0,0.5,1.0),lightPos_);
+      impliciteSurface.drawValues(cg2::Color4f(0.0,0.5,1.0),lightPos_);
     }
     break;
 
@@ -306,14 +306,14 @@ void GLWidgetEx3::paintGL()
     glPolygonMode(GL_FRONT, GL_FILL);
     glDisable(GL_CULL_FACE);
 
-    impliciteSurface.draw(Color(1,1,1));
+    impliciteSurface.draw(Color4f(1,1,1));
 
     glDisable(GL_LIGHTING);
     glPolygonMode(GL_FRONT, GL_LINE);
     glColor4f(0,0,0,0.125);
     glEnable(GL_CULL_FACE);
 
-    impliciteSurface.draw(Color(0.25,0.25,0.25));
+    impliciteSurface.draw(Color4f(0.25,0.25,0.25));
     break;
   }
 }
