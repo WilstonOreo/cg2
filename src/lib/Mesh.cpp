@@ -11,82 +11,103 @@ using namespace std;
 
 namespace cg2
 {
-  void VertexMesh::draw(const Color4f& _color) const
+  void Mesh::draw(const Color4f& _color) const
   {
-    BOOST_FOREACH ( const VertexTriangle& tri, objs_ )
+ /*   BOOST_FOREACH ( const VertexTriangle& tri, objs_ )
+    {
+   //   LOG_MSG;
       tri.draw(_color);
+    }*/
+  }
+
+  void Mesh::optimize(ImplicitSurface& _implicitSurface, unsigned _nVertices, float _quality)
+  {
+    const _collapse = 0.0;
+
+    multimap<float,FaceHandle*> _faces;
+    float _costSum = 0.0;
+
+    unsigned _nFaces = 0;
+
+    BOOST_FOREACH ( const Triangle& _triangle, this->objs() )
+    {
+      float _cost = cost(_implicitSurface,_triangle_triangle);
+      _faces.insert(make_pair<float,FaceHandle*>(cost));
+      _costSum += _cost;
+      _nFaces++;
+    }
+
+    float _qualityN = _quality * _nFaces;
+
+    if (_quality >= 0)
+    {
+      while (_costSum > _qualityN )
+      {
+        float _cost = _faces.begin()->first;
+        FaceHandle* _faceHandle = faces.begin()->second;
+   //     remove_face(_faceHandle);
+        _faces.erase(_faces.begin());
+        _costSum =- _cost;
+      }
+    }
+
+    if (_quality >= 0)
+    { 
+      unsigned i = 0;
+      while (i < _nVertices)
+      {
+        float _cost = _faces.begin()->first;
+        FaceHandle* _faceHandle = faces.begin()->second;
+   //     remove_face(_faceHandle);
+        _faces.erase(_faces.begin());
+        _costSum =- _cost;
+        i++;
+      }
+    }
+  }
+
+  void Mesh::evaluate(ImplicitSurface& _implicitSurface, const Point3f& _p, float& _f, const Vec3f& _gradient) const
+  {
+  }
+
+
+  void Mesh::simplify()
+  {
+  }
+
+  void Mesh::refine()
+  {
+  }
+
+  float cost(const ImplicitSurface& _implicitSurface) const
+  {
+    float _cost = 0.0;
+    BOOST_FOREACH ( const Triangle& _triangle, this->objs() )
+      _cost += cost(_implicitSurface,_triangle);
+  
+    return _cost;
   }
   
-  void TriangleMesh::read(const string& filename)
+  float Mesh::cost(const ImplicitSurface& _implicitSurface, const Triangle& _triangle) const
   {
-    OFFReader off;
-    Vertices vertices;
-    off.read(filename,&vertices,&objs_);
-    calcBoundingBox();
-    build(objs_,boundingBox_);
-  }
-
-  void TriangleMesh::draw(const Color4f& _color) const
-  {
-    BOOST_FOREACH ( const Triangle& tri, objs_ )
-      tri.draw(_color);
-  }
-
-
-  std::pair<TriangleMesh,TriangleMesh> TriangleMesh::split(const Plane& splitPlane)
-  {
-    std::pair<TriangleMesh,TriangleMesh> halves;
+    float _surfaceArea = _triangle.surfaceArea();
+    unsigned _nSamples = 5;
     
-    BOOST_FOREACH ( Triangle& tri, objs_ )
-      splitTriangle(tri,splitPlane,halves);
+    unsigned _count = 0;
+    float _costSum = 0;
 
-    halves.first.calcBoundingBox();
-    halves.first.build(halves.first.objs_,halves.first.boundingBox_);    
-    halves.second.calcBoundingBox();
-    halves.second.build(halves.second.objs_,halves.first.boundingBox_);
+    for (int i = 0; i <= _nSamples; i++)
+      for (int j = 0; j <= i; j++)
+      {
+        float _cost = 0.0;
+        Point3f _p = _triangle.p0() + (float(i) / _nSamples) * (_triangle.p1() - _triangle.p0()) +
+                    (float(i) / _nSamples) * (_triangle.p2() - _triangle.p0());
+        _implicitSurface.evaluate(_p,&_cost);
+        _costSum += _cost;
+        count++;
+      }
 
-    return halves;
+    _costSum /= _count;
+    return _costSum * _surfaceArea;
   }
-
-  void TriangleMesh::splitTriangle(const Triangle& tri, const Plane& plane, 
-                std::pair<TriangleMesh,TriangleMesh>& _halves)
-  {
-    vector<Triangle> triangles;
-    Point3f V[3]; 
-    for (int i = 0; i < 3; i++)
-      V[i] = tri.v[i];
-
-    int signCount = 0;
-    bool signs[3];
-
-    for (int i = 0; i < 3; i++)
-    {
-      signs[i] = (V[i] - plane.center_).dot(plane.normal_);
-      signCount += int(signs[i] < 0);
-    }
-
-    vector<Triangle> *q = &_halves.first.objs_, *r = &_halves.second.objs_;
-    if (signCount >= 2) swap(q,r);
-
-    if (signCount == 0 || signCount == 3) 
-    {
-      r->push_back(tri);
-      return;
-    }
-
-    int k = 0;
-    for (int i = 1; i < 3; i++)
-      if ((signCount == 1) ? signs[i] : !signs[i]) k = i;
-    int u = (k+1) % 3, v = (k+2) % 3;
-
-    Vec3f A = V[u] - V[k], B = V[v] - V[k]; 
-    Point3f iPoint[2];
-    iPoint[0] = V[k] + A*(plane.normal_.dot(plane.center_ - V[k]) / A.dot(plane.normal_));
-    iPoint[1] = V[k] + B*(plane.normal_.dot(plane.center_ - V[k]) / B.dot(plane.normal_));
-
-    q->push_back(Triangle(V[k],iPoint[0],iPoint[1],tri.normal()));
-    r->push_back(Triangle(V[u],V[v],iPoint[0],tri.normal()));
-    r->push_back(Triangle(V[u],iPoint[0],iPoint[1],tri.normal()));
-  }
-
 }

@@ -15,11 +15,6 @@ namespace cg2
     Vertex(Point3f _v = Point3f(), Vec3f _n = Vec3f()) { v(_v); n(_n); }
     void set(Point3f _v, Vec3f _n = Vec3f()) { v = _v; n = _n; }
 
-    bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const 
-    {
-        return false;
-    }
-
     Bounds bounds() const { return Bounds(v,v); }
 
     void draw(const Color4f& _color = Color4f()) const;

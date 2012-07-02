@@ -13,38 +13,6 @@ namespace cg2
     virtual const Point3f& v2() const = 0;
     virtual const Vec3f normal(Point2f* _texCoords = NULL) const = 0;
 
-    virtual bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const 
-    {
-      Vec3f A = v1() - v0(), 
-            B = v2() - v0();
-      Vec3f p = _ray.dir_.cross(B);
-
-      // d = Determinant
-      float d = A.dot(p);
-      if (d > -EPSILON && d < EPSILON) return false;
-
-      float inv_d = 1.0f / d;
-
-      Vec3f tV = _ray.org_ - v0();
-
-      float u = tV.dot(p) * inv_d;
-      if (u < 0.0 || u > 1.0) return false;
-
-      Vec3f q = tV.cross(A);
-      float v = _ray.dir_.dot(q) * inv_d;
-      if (v < 0.0 || u + v > 1.0) return false;
-
-      float t = B.dot(q) *  inv_d;
-
-      if (_ray.intersection(this->pointer(),t))
-      {
-        if (_texCoords) (*_texCoords)(u,v);
-        if (_normal) (*_normal)(normal(_texCoords));
-        return true;
-      }
-      return false;
-    }  
-
     int intersect(float splitPos, int axis)
     {
       float minPos = std::min(v0()[axis],std::min(v1()[axis],v2()[axis]));
@@ -82,7 +50,7 @@ namespace cg2
     {
       v[0] = _v0; v[1] = _v1; v[2] = _v2; n_ = _n;
       if (_n.sqrLength() == 0.0 )
-        n_ = (v[2] - v[0]).cross(v[1] - v[0]);
+        n_ = cross(v[2] - v[0],v[1] - v[0]);
     }
 
     const Point3f& v0() const { return v[0]; }

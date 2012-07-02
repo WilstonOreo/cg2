@@ -16,7 +16,7 @@ namespace cg2
   {
     static const int channels_ = CHANNELS;
     typedef VALUE Value;
-    static const Value maxValue() { return valueMax(Value()); }
+    static const Value maxValue() { return 1; }
     Color()
     {
       BOOST_STATIC_ASSERT(channels_ >= 3 && channels_ <= 4);
@@ -89,23 +89,6 @@ namespace cg2
     inline void operator()(Value _r, Value _g, Value _b, Value _a) { r(_r); g(_g); b(_b); a(_a); }
   
     protected:
-    static const float valueMax( float ) {
-      return 1.0f;
-    }
-    static const double valueMax( double ) {
-      return 1.0;
-    }
-    static const u8 valueMax( u8 ) {
-      return 255;
-    }
-
-    static const u16 valueMax( u16 ) {
-      return 65535;
-    }
-    
-    static const u32 valueMax( u32 ) {
-      return 1 << 31;
-    }
 
     Value v_[channels_];
   };

@@ -5,51 +5,40 @@
 TEMPLATE = app
            DEPENDPATH += . \
                          include/cg2 \
-                         src/cg2ex3 \
+                         src/cg2ex4 \
                          src/lib \
                          src/test
-                         INCLUDEPATH += . src/cg2ex3 include ../TbdLib/include
+                         INCLUDEPATH += . src/cg2ex4 include ../TbdLib/include ../OpenMesh-2.2/src/
 
 !win32|win64 {
-  LIBS += -lGLU
+  LIBS += -lGLU -lOpenMeshCore -lOpenMeshTools
 }
 
 QT += opengl
 
 # Input
       HEADERS += include/cg2/BoundingBox.hpp \
-                 include/cg2/Image.hpp \
                  include/cg2/KDTree.hpp \
                  include/cg2/Median.hpp \
                  include/cg2/Mesh.hpp \
                  include/cg2/MeshReader.hpp \
                  include/cg2/MeshWriter.hpp \
                  include/cg2/misc.hpp \
-                 include/cg2/Object.hpp \
                  include/cg2/OFFReader.hpp \
                  include/cg2/OFFWriter.hpp \
-                 include/cg2/Plane.hpp \
                  include/cg2/PointCloud.hpp \
                  include/cg2/Primitive.hpp \
-                 include/cg2/Ray.hpp \
-                 include/cg2/SceneObject.hpp \
-                 include/cg2/Sphere.hpp \
                  include/cg2/Triangle.hpp \
                  include/cg2/Vector.hpp \
-                 include/cg2/ImpliciteSurface.hpp \
+                # include/cg2/ImplicitSurface.hpp \
                  include/cg2/Vertex.hpp \
-                 include/cg2/PointCloud2D.hpp \
 
                  SOURCES += src/lib/BoundingBox.cpp \
-                            src/lib/image.cpp \
                             src/lib/Mesh.cpp \
                             src/lib/OFFReader.cpp \
                             src/lib/OFFWriter.cpp \
-                            src/lib/Plane.cpp \
                             src/lib/PointCloud.cpp \
-                            src/lib/Ray.cpp \
-                            src/lib/Sphere.cpp \
-                            src/lib/ImpliciteSurface.cpp \
+                           # src/lib/ImplicitSurface.cpp \
                             src/lib/Vertex.cpp \ 
                             src/lib/Bounds.cpp \
                             src/lib/Triangle.cpp
@@ -81,6 +70,15 @@ cg2ex3 {
   SOURCES += src/cg2ex3/mainwindowex3.cpp \
   src/cg2ex3/mainex3.cpp \
   src/cg2ex3/glwidgetex3.cpp
+}
+
+cg2ex4 {
+  TARGET = cg2ex4
+  HEADERS += src/cg2ex4/mainwindowex4.h \
+  src/cg2ex4/glwidgetex4.h
+  SOURCES += src/cg2ex4/mainwindowex4.cpp \
+  src/cg2ex4/mainex4.cpp \
+  src/cg2ex4/glwidgetex4.cpp
 }
 
 

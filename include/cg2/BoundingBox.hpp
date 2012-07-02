@@ -11,8 +11,6 @@ namespace cg2
     BoundingBox() : Bounds() {}
     BoundingBox(Point3f _min, Point3f _max) : Bounds(_min,_max) {}
 
-    bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const;
-    
     /** @brief Split bounding box in two halves 
      */
     void split(float splitPos, Axis axis, BoundingBox& boxLeft, BoundingBox& boxRight) const;

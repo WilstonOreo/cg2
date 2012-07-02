@@ -31,8 +31,6 @@ namespace cg2
       void read(const string& filename);
       void write(const string& filename) const;
 
-      bool intersect(Ray& _ray, Vec3f* _normal = NULL, Point2f* _texCoords = NULL) const { return false; }
-
       void update();
       virtual std::set<const Vertex*> collectKNearest(Point3f const & p, int k) const;
       virtual std::set<const Vertex *> collectInRadius(Point3f const & p, float radius) const;
