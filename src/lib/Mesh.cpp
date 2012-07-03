@@ -66,10 +66,6 @@ namespace cg2
     }
   }
 
-  void Mesh::evaluate(ImplicitSurface& _implicitSurface, const Point3f& _p, float& _f, const Vec3f& _gradient) const
-  {
-  }
-
 
   void Mesh::simplify()
   {
