@@ -17,14 +17,94 @@ namespace cg2
   {
   public:
 
+    float length() const { return (f_[7].point_ - f[0].point_).length(); }
+
     ImplicitSample& sample(int _x, int _y, int _z);
     const ImplicitSample& sample(int _x, int _y, int _z) const;
 
   private:
     ImplicitSample f_[8];
   };
-  
-  class VoxelKDTree : KDTree<Vertex>
+ 
+  struct VoxelTreeNode
+  {
+    KDNode(Axis _axis = X, float _splitPos = 0)
+    {
+      axis = _axis;
+      splitPos = _splitPos;
+      left = NULL; right = NULL;
+    }
+
+    bool isLeaf() const { return (!left && !right); }
+
+    VoxelTreeNode* left_;
+    VoxelTreeNode* right_;
+
+    Axis axis_;
+    float splitPos_;
+    Voxel* voxel_;
+
+    void free() 
+    { 
+      left_->free(); 
+      delete left_; 
+      left_ = NULL; 
+      right_->free();
+      delete right_;
+      right_ = NULL;
+    }
+
+/*    void draw(Color color, const BoundingBox& box, int depth, int maxDepth) const
+    {
+      if (isLeaf() || depth >= maxDepth) { box.draw(color); return; }
+
+      BoundingBox boxLeft, boxRight;
+      box.split(splitPos,axis,boxLeft,boxRight);
+      if (left) left->draw(color,boxLeft,depth+1,maxDepth);
+      if (right) right->draw(color,boxRight,depth+1,maxDepth);
+    }
+    */
+  };
+
+  template <typename T> 
+  struct KDTree
+  {
+    KDTree() : root_(NULL) {}
+
+  protected:
+    typedef KDNode<T> Node;
+    Node* root_;
+    void clear()
+    {
+      if (!root_) return;
+      root_->free();
+      delete root_;
+      root_ = NULL;
+    }
+
+/*  void draw(Color color, const BoundingBox& box) const
+    {
+      if (root) root->draw(color,box,0,12);
+    }
+*/
+
+     void build(std::vector<T>& objs, const BoundingBox& boundingBox)
+    {
+      clear();
+      root_ = new Node;
+      root_->objs.reserve(objs.size());
+      
+      for (unsigned i = 0; i < objs.size(); i++)
+        root_->objs.push_back(&objs[i]);
+      
+      divideNode(root_,boundingBox,0);
+    }
+
+   virtual void divideNode(Node* node, const BoundingBox& boundingBox, int depth) = 0;
+  };
+
+
+  class VoxelKDTree
   {
     typedef KDNode<Vertex> Node;
 
@@ -71,11 +151,13 @@ namespace cg2
 
   private:
 
+
     Voxel getVoxel(const Point3f& _p);
 
-    void marchingCube(const Bounds& _bounds);
-    Vertex vertexInterp(Voxel* _a, Voxel* _b);
+    void marchingCube(const Voxel& _voxel, Mesh& _mesh) const;
+  Vertex sampleInterp(const ImplicitSample& _a, const ImplicitSample& _b) const;
 
     VoxelKDTree kdTree_;
+    vector<Voxel> voxels_;
   };
 }

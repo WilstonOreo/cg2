@@ -163,8 +163,21 @@ namespace cg2
   void PointCloud::read(const string& filename)
   {
     OFFReader off;
- //   off.read(filename,&this->objs_,NULL);
-    update();
+    vector<VertexTriangle> _triangles;
+    off.read(filename,&objs(),&_triangles);
+
+    // Calculate Normals
+    BOOST_FOREACH(VertexTriangle& tri, _triangles)
+    {
+      Vec3f n = cross(tri.v2() - tri.v0(),tri.v1() - tri.v0()).normalize(); 
+      tri.vtx0()->n += n;
+      tri.vtx1()->n += n;
+      tri.vtx2()->n += n;
+    }
+    BOOST_FOREACH(Vertex& vertex, objs())
+      vertex.n.normalize();
+
+   update();
   }
 
   void PointCloud::write(const string& filename) const

@@ -88,7 +88,7 @@ namespace cg2
     static const size_t size_ = DIMENSIONS;
 
     /// size/dimension of the vector
-    static size_t size() { return size_; }
+    static size_t size() { return 0; }
 
     protected:
     /// Array to store coordinate values
