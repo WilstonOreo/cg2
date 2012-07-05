@@ -33,6 +33,11 @@ namespace cg2
                             std::max(v0().z(),std::max(v1().z(),v2().z()))));
     }
 
+    float surfaceArea() const
+    {
+      return 0.5 * (v2() - v0()) * (v1() - v0());
+    }
+
     POINT v[3];
   };
 

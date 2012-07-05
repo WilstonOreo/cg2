@@ -1,7 +1,6 @@
 
 #include "cg2/PointCloud.hpp"
 #include "cg2/Mesh.hpp"
-#include "cg2/Image.hpp"
 
 namespace cg2
 {
@@ -16,11 +15,11 @@ namespace cg2
   struct Voxel
   {
   public:
-
-    float length() const { return (f_[7].point_ - f[0].point_).length(); }
+    float size() const { return (f_[7].point_ - f_[0].point_).length(); }
 
     ImplicitSample& sample(int _x, int _y, int _z);
     const ImplicitSample& sample(int _x, int _y, int _z) const;
+    void draw(const Color4f& color = Color4f()) const;
 
   private:
     ImplicitSample f_[8];
@@ -28,21 +27,21 @@ namespace cg2
  
   struct VoxelTreeNode
   {
-    KDNode(Axis _axis = X, float _splitPos = 0)
+    VoxelTreeNode(Axis _axis = X, float _splitPos = 0)
     {
-      axis = _axis;
-      splitPos = _splitPos;
-      left = NULL; right = NULL;
+      axis_ = _axis;
+      splitPos_ = _splitPos;
+      left_ = NULL; right_ = NULL;
     }
 
-    bool isLeaf() const { return (!left && !right); }
+    bool isLeaf() const { return (!left_ && !right_); }
 
     VoxelTreeNode* left_;
     VoxelTreeNode* right_;
 
     Axis axis_;
     float splitPos_;
-    Voxel* voxel_;
+    unsigned int voxelIdx_;
 
     void free() 
     { 
@@ -66,13 +65,11 @@ namespace cg2
     */
   };
 
-  template <typename T> 
-  struct KDTree
+  class VoxelKDTree
   {
-    KDTree() : root_(NULL) {}
-
-  protected:
-    typedef KDNode<T> Node;
+    public:
+    VoxelKDTree() : root_(NULL) {}
+    typedef VoxelTreeNode Node;
     Node* root_;
     void clear()
     {
@@ -82,14 +79,16 @@ namespace cg2
       root_ = NULL;
     }
 
-/*  void draw(Color color, const BoundingBox& box) const
-    {
-      if (root) root->draw(color,box,0,12);
-    }
-*/
+    const Node* root() const { return root_; }
+    
+    vector<Voxel> voxels_;
 
-     void build(std::vector<T>& objs, const BoundingBox& boundingBox)
+    /// Get a voxel from a point
+    const Voxel* voxel(const Point3f& _p, const Node* _node, const Bounds& _bounds ) const;
+
+     void build(PointCloud& _pointCloud, const Bounds& _bounds)
     {
+      /*
       clear();
       root_ = new Node;
       root_->objs.reserve(objs.size());
@@ -97,57 +96,27 @@ namespace cg2
       for (unsigned i = 0; i < objs.size(); i++)
         root_->objs.push_back(&objs[i]);
       
-      divideNode(root_,boundingBox,0);
+      divideNode(root_,boundingBox,0);*/
     }
-
-   virtual void divideNode(Node* node, const BoundingBox& boundingBox, int depth) = 0;
-  };
-
-
-  class VoxelKDTree
-  {
-    typedef KDNode<Vertex> Node;
-
-    /// Get a voxel from a point
-    Voxel voxel(const Point& _p, const Node* _node, const Bounds& _bounds ) const
-    {
-      if (_node->isLeaf())
-      {
-        return _node->voxel_;
-      }
-
-      Bounds _left, _right;
-      _bounds.split(_node->axis,_node->splitPos,_left,_right);
-
-      if (_p[_node->axis] < _node->splitPos)
-        return voxel(_p,_node->left,_left);
-      else
-        return voxel(_p,_node->right,_right);
-    }
-
 
     virtual void divideNode(Node* node, const BoundingBox& box, int depth);
   };
 
 
-
   class ImplicitSurface
   {
   public:
-    void make(const PointCloud& _pointCloud);
+    void make(PointCloud& _pointCloud);
     Mesh polygonize() const;
     
-    void evaluate(const Point3f& _p, float* _f = NULL, Vec3f* _gradient = NULL);
-    Point3f project(const Point3f& _p, float* _f = NULL, Vec3f* _gradient = NULL);
+    void evaluate(const Point3f& _p, float* _f = NULL, Vec3f* _gradient = NULL) const;
+    Point3f project(const Point3f& _p, float* _f = NULL, Vec3f* _gradient = NULL) const;
 
     void read(string filename);
 
     void draw(const Color4f& color = Color4f()) const;
     void drawPoints(const Color4f& color, Point3f _lightPos) const;
     void drawGrid(const Color4f& color = Color4f()) const;
-
-  protected:
-    void calcBoundingBox(); 
 
   private:
 
@@ -158,6 +127,9 @@ namespace cg2
   Vertex sampleInterp(const ImplicitSample& _a, const ImplicitSample& _b) const;
 
     VoxelKDTree kdTree_;
-    vector<Voxel> voxels_;
+
+    float epsilon_;
+
+    TBD_PROPERTY_REF(Bounds,bounds);
   };
 }

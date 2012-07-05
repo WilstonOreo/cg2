@@ -11,10 +11,6 @@ namespace cg2
     BoundingBox() : Bounds() {}
     BoundingBox(Point3f _min, Point3f _max) : Bounds(_min,_max) {}
 
-    /** @brief Split bounding box in two halves 
-     */
-    void split(float splitPos, Axis axis, BoundingBox& boxLeft, BoundingBox& boxRight) const;
-
     void draw(const Color4f& _color = Color4f()) const;
 
     Bounds bounds() const { return Bounds(min(),max()); }

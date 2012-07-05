@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+#include "cg2/ImplicitSurface.hpp"
 
 #include <tbd/log.h>
 
@@ -24,6 +25,12 @@ namespace cg2
       LOG_ERR << "Read error.";
       return;
     }
+
+
+    update_face_normals();
+  //  update_normals();
+    update_vertex_normals();
+    update_halfedge_normals();
 
     Mesh::VertexIter vIt(vertices_begin()), vEnd(vertices_end());
 
@@ -47,6 +54,9 @@ namespace cg2
     glBegin(GL_TRIANGLES);
     for (; fIt!=fEnd; ++fIt)
     {
+      glColor4f(_color.r(),_color.g(),_color.b(),_color.a());
+      
+      /*
       fvIt = cfv_iter(fIt.handle());
       
       Point3f A = point(fvIt); ++fvIt;
@@ -55,19 +65,19 @@ namespace cg2
       
       Vec3f _normal = cross(C-A,B-A);
       _normal *= 1.0 / _normal.length(); 
-
- //     LOG_MSG << fmt("% % %") % _normal.x() % _normal.y() % _normal.z();
-
-
-   // glNormal3f(1.0,1.0,1.0);
-     glNormal3f( COORDS(_normal) );
+      glNormal3f( COORDS(_normal) );
+*/
 
       fvIt = cfv_iter(fIt.handle());
       
+      glNormal3fv( &normal(fvIt)[0] );
       glVertex3fv( &point(fvIt)[0] );
       ++fvIt;
+      
+      glNormal3fv( &normal(fvIt)[0] );
       glVertex3fv( &point(fvIt)[0] );
       ++fvIt;
+      glNormal3fv( &normal(fvIt)[0] );
       glVertex3fv( &point(fvIt)[0] );
     } 
     glEnd();
@@ -76,54 +86,113 @@ namespace cg2
 
   void Mesh::optimize(ImplicitSurface& _implicitSurface, unsigned _nVertices, float _quality)
   {
-    /*
-    const _collapse = 0.0;
+    typename Mesh::ConstFaceIter    _fIt(faces_begin()), 
+                                    _fEnd(faces_end());
+    typename Mesh::ConstFaceVertexIter _fvIt;
+    float _collapse = 0.0;
 
-    multimap<float,FaceHandle*> _faces;
+    FaceCostMap _faces;
     float _costSum = 0.0;
-
     unsigned _nFaces = 0;
 
-    BOOST_FOREACH ( const Triangle& _triangle, this->objs() )
+    for (; _fIt!=_fEnd; ++_fIt)
     {
-      float _cost = cost(_implicitSurface,_triangle_triangle);
-      _faces.insert(make_pair<float,FaceHandle*>(cost));
+      float _cost = cost(_implicitSurface,_fIt);
+      _faces.insert(make_pair<float,Mesh::FaceHandle>(_cost,_fIt.handle()));
       _costSum += _cost;
       _nFaces++;
     }
 
     float _qualityN = _quality * _nFaces;
 
+
     if (_quality >= 0)
     {
       while (_costSum > _qualityN )
       {
         float _cost = _faces.begin()->first;
-        FaceHandle* _faceHandle = faces.begin()->second;
-   //     remove_face(_faceHandle);
-        _faces.erase(_faces.begin());
+        Mesh::FaceHandle _fh = _faces.begin()->second;
+        Mesh::FaceHalfedgeIter _fheIt = fh_iter(_fh);
+        collapse(_fheIt);
         _costSum =- _cost;
+
+        if (_faces.empty()) break;
       }
     }
 
-    if (_quality >= 0)
+    if (_nVertices > 0)
     { 
       unsigned i = 0;
       while (i < _nVertices)
       {
         float _cost = _faces.begin()->first;
-        FaceHandle* _faceHandle = faces.begin()->second;
-   //     remove_face(_faceHandle);
-        _faces.erase(_faces.begin());
+        Mesh::FaceHandle _fh = _faces.begin()->second;
+        Mesh::FaceHalfedgeIter _fheIt = fh_iter(_fh);
+        collapse(_fheIt);
         _costSum =- _cost;
         i++;
       }
-    }*/
+    }
   }
 
+  float Mesh::cost(const Mesh::VertexHandle& _vHandle)
+  {
+    typename Mesh::ConstVertexVertexIter _vvBegin = cvv_begin(_vHandle),
+                                         _vvEnd = cvv_end(_vHandle),
+                                         _vvIt;
+
+    float _cost = 0;
+    for (_vvIt = _vvBegin ; _vvIt != _vvEnd ; ++_vvIt )
+    {
+      Mesh::VertexHandle _vvHandle = _vvIt.handle();
+      Vec3f _normal = normal(_vvHandle);
+      float _dist = dot(_normal,point(_vHandle) - point(_vvHandle));
+      _cost += _dist * _dist;
+    }
+
+    return _cost;
+  }
 
   void Mesh::simplify()
   {
+    VertexCostMap _vertices;
+    typename Mesh::ConstVertexIter  _vIt(vertices_begin()), 
+                                    _vEnd(vertices_end());
+    typename Mesh::VertexFaceIter vf_it;
+    typename Mesh::HalfedgeIter h_it(halfedges_begin());
+
+    for (; _vIt != _vEnd; ++_vIt)
+    {
+      _vertices.insert(make_pair<float,Mesh::VertexHandle>(cost(_vIt.handle()),_vIt.handle()));
+  
+    }
+    size_t _nVertices = _vertices.size();
+
+    while (_vertices.size() > _nVertices/2)
+    {
+      float _cost = _vertices.begin()->first;
+      Mesh::VertexHandle _vHandle = _vertices.begin()->second; 
+
+      if (_vHandle.is_valid())
+      {
+      Mesh::HalfedgeHandle _heHandle = halfedge_handle(_vHandle);
+        if (_heHandle.is_valid())
+        {
+          if (face_handle(_heHandle).is_valid() && halfedge_handle(face_handle(_heHandle)).is_valid())
+
+      if (is_collapse_ok(_heHandle));
+      {
+          collapse(_heHandle); 
+      }
+}}
+
+      _vertices.erase(_vertices.begin());
+      if (_vertices.empty()) break;
+    } 
+    update_face_normals();
+    update_vertex_normals();
+
+
   }
 
   void Mesh::refine()
@@ -132,33 +201,48 @@ namespace cg2
 
   float Mesh::cost(const ImplicitSurface& _implicitSurface) const
   {
-    
+    typename Mesh::ConstFaceIter    _fIt(faces_begin()), 
+                                    _fEnd(faces_end());
     float _cost = 0.0;
-    /*BOOST_FOREACH ( const Triangle& _triangle, this->objs() )
-      _cost += cost(_implicitSurface,_triangle);
-  */
+    for (; _fIt!=_fEnd;  ++_fIt)
+      _cost += cost(_implicitSurface,_fIt.handle());
+     
     return _cost;
   }
   
-  float Mesh::cost(const ImplicitSurface& _implicitSurface, const Triangle& _triangle) const
+  float Mesh::cost(const ImplicitSurface& _implicitSurface, const Mesh::FaceHandle& _fHandle) const
   {
-    float _surfaceArea = 0; //_triangle.surfaceArea();
+    typename Mesh::ConstFaceVertexIter _fvIt = cfv_iter(_fHandle);
+    Point3f _A = point(_fvIt); ++_fvIt;
+    Point3f _B = point(_fvIt); ++_fvIt;
+    Point3f _C = point(_fvIt);
+
+    Vec3f _u = _B - _A, _v = _C - _A;
+    float _surfaceArea = 0.5 * _u.length() * _v.length();
     unsigned _nSamples = 5;
     
-    unsigned _count = 0;
+    unsigned _count = 1;
     float _costSum = 0;
-/*
-    for (int i = 0; i <= _nSamples; i++)
-      for (int j = 0; j <= i; j++)
+
+    for (unsigned int i = 1; i <= _nSamples; i++)
+    {
+      float _cost = 0.0;
+      _implicitSurface.evaluate(_A,&_cost);
+      _costSum =+ _cost;
+
+      float _iStep = float(i) / _nSamples;
+      Point3f _stepPointU = _A + _iStep * _u, _stepPointV = _A + _iStep * _v;
+
+      for (unsigned int j = 0; j <= i; j++)
       {
-        float _cost = 0.0;
-        Point3f _p = _triangle.p0() + (float(i) / _nSamples) * (_triangle.p1() - _triangle.p0()) +
-                    (float(i) / _nSamples) * (_triangle.p2() - _triangle.p0());
+        float _jStep = float(j) / _nSamples;
+        Point3f _p = _stepPointU + (_stepPointV - _stepPointU) * _jStep;
         _implicitSurface.evaluate(_p,&_cost);
         _costSum += _cost;
-        count++;
+        _count++;
       }
-*/
+    }
+
     _costSum /= _count;
     return _costSum * _surfaceArea;
   }

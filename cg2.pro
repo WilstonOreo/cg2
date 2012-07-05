@@ -30,7 +30,7 @@ QT += opengl
                  include/cg2/Primitive.hpp \
                  include/cg2/Triangle.hpp \
                  include/cg2/Vector.hpp \
-                # include/cg2/ImplicitSurface.hpp \
+                 include/cg2/ImplicitSurface.hpp \
                  include/cg2/Vertex.hpp \
 
                  SOURCES += src/lib/BoundingBox.cpp \
@@ -38,7 +38,7 @@ QT += opengl
                             src/lib/OFFReader.cpp \
                             src/lib/OFFWriter.cpp \
                             src/lib/PointCloud.cpp \
-                           # src/lib/ImplicitSurface.cpp \
+                            src/lib/ImplicitSurface.cpp \
                             src/lib/Vertex.cpp \ 
                             src/lib/Bounds.cpp \
                             src/lib/Triangle.cpp

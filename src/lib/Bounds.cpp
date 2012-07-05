@@ -42,4 +42,12 @@ namespace cg2
 
     Vec3f Bounds::size() const { return max_ - min_; }
 
+    void Bounds::split(float splitPos, Axis axis, Bounds& _left, Bounds& _right) const
+    {
+      _left(min(),max());
+      _right(min(),max());
+      _left.max()[axis] = splitPos;
+      _right.min()[axis] = splitPos;
+    }
+
 }

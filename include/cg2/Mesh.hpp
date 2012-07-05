@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "cg2/Compound.hpp"
 #include "cg2/Triangle.hpp"
 #include <OpenMesh/Core/IO/MeshIO.hh>
@@ -23,15 +25,18 @@ namespace cg2
     HalfedgeTraits {};
     EdgeTraits {};
     FaceTraits {};
-    VertexAttributes(0);
-    HalfedgeAttributes(OpenMesh::Attributes::PrevHalfedge);
-    EdgeAttributes(0);
-    FaceAttributes(OpenMesh::Attributes::Normal);
+    VertexAttributes(OpenMesh::Attributes::Normal | OpenMesh::Attributes::Status);
+    HalfedgeAttributes(OpenMesh::Attributes::Normal | OpenMesh::Attributes::PrevHalfedge | OpenMesh::Attributes::Status);
+    EdgeAttributes(OpenMesh::Attributes::Status);
+    FaceAttributes(OpenMesh::Attributes::Normal | OpenMesh::Attributes::Status);
   };
 
   class Mesh : public OpenMesh::TriMesh_ArrayKernelT<MeshTraits> /*, public Compound<Triangle>*/
   {
   public:
+    typedef std::multimap<float,Mesh::FaceHandle> FaceCostMap;
+    typedef std::multimap<float,Mesh::VertexHandle> VertexCostMap;
+
     void read(string _filename);
 
     void optimize(ImplicitSurface& _implicitSurface, unsigned _nVertices = 0, float _quality = 0);
@@ -42,13 +47,12 @@ namespace cg2
 
     float cost(const ImplicitSurface& _implicitSurface) const;
 
+    float cost(const Mesh::VertexHandle& _vHandle); 
+
     Bounds& bounds() { return bounds_; }
 
-  protected:
-    void divideNode(KDNode<Triangle>* node, const BoundingBox& box, int depth) {}
-
   private:
-    float cost(const ImplicitSurface& _implicitSurface, const Triangle& _triangle) const;
+    float cost(const ImplicitSurface& _implicitSurface, const Mesh::FaceHandle& _fHandle) const;
   
     Bounds bounds_;
   };

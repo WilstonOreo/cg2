@@ -18,6 +18,10 @@ namespace cg2
     std::vector<Point3f> corners() const;
     void extend(const Bounds& _bounds);
 
+    /** @brief Split bounding box in two halves 
+     */
+    void split(float splitPos, Axis axis, Bounds& _left, Bounds& _right) const;
+    
     Vec3f size() const;
     float radius() const { return size().length()/2; }
     

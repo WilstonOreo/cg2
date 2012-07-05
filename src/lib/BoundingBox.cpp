@@ -23,14 +23,6 @@ namespace cg2
     return Z;
   }
 
-  void BoundingBox::split(float splitPos, Axis axis, BoundingBox& boxLeft, BoundingBox& boxRight) const
-  {
-    boxLeft(min(),max());
-    boxRight(min(),max());
-    boxLeft.max()[axis] = splitPos;
-    boxRight.min()[axis] = splitPos;
-  }
-
   void BoundingBox::draw(const Color4f& _color) const
   {
     float x  = min().x(), y  = min().y(), z  = min().z();

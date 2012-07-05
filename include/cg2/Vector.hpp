@@ -39,13 +39,13 @@ namespace cg2
 
   /** @brief Base class of Point and Vec which basically hold a number of coordinates
    * @tparam DIMENSIONS Number of dimensions
-   * @tparam COORD_TYPE Coordinate type
+   * @tparam Scalar Coordinate type
    */
-  template<int DIMENSIONS, typename COORD_TYPE = DEFAULT_TYPE>  
+  template<int DIMENSIONS, typename Scalar = DEFAULT_TYPE>  
   struct Coords
   {
     /// Coordinate value type
-    typedef COORD_TYPE value_type;
+    typedef Scalar value_type;
     
     /// Base constructor, all values are initially set to zero
     Coords() { FOREACH_DIM a_[i] = 0; }
@@ -90,24 +90,25 @@ namespace cg2
     /// size/dimension of the vector
     static size_t size() { return 0; }
 
+
     protected:
     /// Array to store coordinate values
-    value_type a_[DIMENSIONS]; 
+    Scalar a_[DIMENSIONS]; 
   };
 
   /** @brief Template class to represent a vector
    * @tparam DIMENSIONS Number of dimensions
-   * @tparam COORD_TYPE Coordinate type
+   * @tparam Scalar Coordinate type
    */
-  template<int DIMENSIONS, typename COORD_TYPE = DEFAULT_TYPE>  
-  struct Vec : public Coords<DIMENSIONS,COORD_TYPE>
+  template<int DIMENSIONS, typename Scalar = DEFAULT_TYPE>  
+  struct Vec : public Coords<DIMENSIONS,Scalar>
   {
     /// Coordinate value type
-    typedef COORD_TYPE value_type;
+    typedef Scalar value_type;
 
     /// Type of base class
-    typedef Coords<DIMENSIONS,COORD_TYPE> _Coords;
-    typedef Vec<DIMENSIONS,COORD_TYPE> vector_type;
+    typedef Coords<DIMENSIONS,Scalar> _Coords;
+    typedef Vec<DIMENSIONS,Scalar> vector_type;
 
     Vec() : _Coords() {}
     Vec( Vec& v ) : _Coords( v ) {}
@@ -116,10 +117,10 @@ namespace cg2
     Vec( value_type _x, value_type _y, value_type _z) : _Coords(_x,_y,_z) { }
     Vec( value_type _x, value_type _y, value_type _z, value_type _w ) : _Coords(_x,_y,_z,_w) { }
 
-    value_type  sqrLength()        { return dot(*this,*this); }
-    value_type	 length() 			  	{ return    sqrt( sqrLength() ); }
-    //void 	     normalize() 	  		{ value_type l = length(); if (l>0.0f) FOREACH_DIM this->a_[i] /= l; }
-    Vec 	     normalize() const { Vec v(*this); v.normalize(); return v; }
+    Scalar  sqrLength()   const     { return dot(*this,*this); }
+    Scalar	 length() 		const	  	{ return    sqrt( sqrLength() ); }
+    vector_type& normalize() { Scalar l = length(); FOREACH_DIM this->a_[i] /= l; return *this; }
+    vector_type 	     normalized() const		{ return *this * ( 1 / length() ); }
 
     /** @brief Calculates cross product by this and another Vec
      * @param _left first vector
@@ -148,7 +149,7 @@ namespace cg2
       return sum;
     }
 
-
+    vector_type vectorize(const Scalar& _s) { FOREACH_DIM _Coords::a_[i] = _s; return *this; }
 
     /// Vector operations
     Vec operator- () const { Vec v(*this);  FOREACH_DIM v[i] = -v[i];  return v; }
@@ -173,14 +174,14 @@ namespace cg2
 
   /** @brief Template class to represent a point 
    * @tparam DIMENSIONS Number of dimensions
-   * @tparam COORD_TYPE Coordinate type
+   * @tparam Scalar Coordinate type
    */
-  template<int DIMENSIONS, typename COORD_TYPE = DEFAULT_TYPE>  
-  struct Point : public Coords<DIMENSIONS,COORD_TYPE>
+  template<int DIMENSIONS, typename Scalar = DEFAULT_TYPE>  
+  struct Point : public Coords<DIMENSIONS,Scalar>
   {
-    typedef COORD_TYPE value_type;
-    typedef Vec<DIMENSIONS,COORD_TYPE> vector_type;
-    typedef Coords<DIMENSIONS,COORD_TYPE> _Coords;
+    typedef Scalar value_type;
+    typedef Vec<DIMENSIONS,Scalar> vector_type;
+    typedef Coords<DIMENSIONS,Scalar> _Coords;
 
     Point() : _Coords() {}
     Point( Point& p ) : _Coords( p ) {}

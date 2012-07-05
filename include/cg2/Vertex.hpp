@@ -12,7 +12,7 @@ namespace cg2
 
   struct Vertex : public Primitive
   {
-    Vertex(Point3f _v = Point3f(), Vec3f _n = Vec3f()) { v(_v); n(_n); }
+    Vertex(Point3f _v = Point3f(), Vec3f _n = Vec3f()) { v(_v); n(_n); pos_ = 0; neg_ = 0; }
     void set(Point3f _v, Vec3f _n = Vec3f()) { v = _v; n = _n; }
 
     Bounds bounds() const { return Bounds(v,v); }
@@ -21,6 +21,9 @@ namespace cg2
 
     Point3f v;
     Vec3f n;
+   
+    float pos_, neg_;
+
     bool hasNormal() { return (n.length() != 0.0f); }
 
   };

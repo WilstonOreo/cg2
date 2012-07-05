@@ -312,44 +312,41 @@ namespace cg2
   }
 
 
-  Voxel VoxelKDTree::voxel(const Point& _p, const Node* _node, const Bounds& _bounds ) const
+  const Voxel* VoxelKDTree::voxel(const Point3f& _p, const Node* _node, const Bounds& _bounds ) const
   {
-    if (_node->isLeaf())
-    {
-      return _node->voxel_;
-    }
+    if (_node->isLeaf()) return &voxels_[_node->voxelIdx_];      
 
     Bounds _left, _right;
-    _bounds.split(_node->axis,_node->splitPos,_left,_right);
+    _bounds.split(_node->splitPos_,_node->axis_,_left,_right);
 
-    if (_p[_node->axis] < _node->splitPos)
-      return voxel(_p,_node->left,_left);
+    if (_p[_node->axis_] < _node->splitPos_)
+      return voxel(_p,_node->left_,_left);
     else
-      return voxel(_p,_node->right,_right);
+      return voxel(_p,_node->right_,_right);
   }
 
-  void ImplicitSurface::evaluate(const Point3f& _p, float* _f, Vec3f* _gradient)
+  void ImplicitSurface::evaluate(const Point3f& _p, float* _f, Vec3f* _gradient) const
   {
-    Voxel _voxel = voxel(_p,kdTree_.root_,bounds());
+    const Voxel* _voxel = kdTree_.voxel(_p,kdTree_.root(),bounds());
 
     /// Interpolation
-    ImplicitSample  _s000 = _voxel.sample(0,0,0),
-                    _s001 = _voxel.sample(0,0,1),
-                    _s010 = _voxel.sample(0,1,0),
-                    _s011 = _voxel.sample(0,1,1),
-                    _s100 = _voxel.sample(1,0,0),
-                    _s101 = _voxel.sample(1,0,1),
-                    _s110 = _voxel.sample(1,1,0),
-                    _s111 = _voxel.sample(1,1,1);
+    ImplicitSample  _s000 = _voxel->sample(0,0,0),
+                    _s001 = _voxel->sample(0,0,1),
+                    _s010 = _voxel->sample(0,1,0),
+                    _s011 = _voxel->sample(0,1,1),
+                    _s100 = _voxel->sample(1,0,0),
+                    _s101 = _voxel->sample(1,0,1),
+                    _s110 = _voxel->sample(1,1,0),
+                    _s111 = _voxel->sample(1,1,1);
 
-    float _pLoc = _p - _s000;
+    Vec3f _pLoc = _p - _s000.point_;
     float _lengthX = _s001.point_.x() - _s000.point_.x();
     float _lengthY = _s010.point_.y() - _s000.point_.y();
     float _lengthZ = _s100.point_.z() - _s000.point_.z();
 
-    _fracX = (_lengthX - _pLoc.x()) / _lengthX;
-    _fracY = (_lengthY - _pLoc.y()) / _lengthY;
-    _fracZ = (_lengthZ - _pLoc.z()) / _lengthZ;
+    float _fracX = (_lengthX - _pLoc.x()) / _lengthX;
+    float _fracY = (_lengthY - _pLoc.y()) / _lengthY;
+    float _fracZ = (_lengthZ - _pLoc.z()) / _lengthZ;
 
     if (_f)
     {
@@ -366,137 +363,105 @@ namespace cg2
 
     if (_gradient)
     {
-      float _x00 = _fracX * _s000.normal_ + (1 - _fracX) * _s001.normal_;
-      float _x01 = _fracX * _s010.normal_ + (1 - _fracX) * _s011.normal_;
-      float _x10 = _fracX * _s100.normal_ + (1 - _fracX) * _s101.normal_;
-      float _x11 = _fracX * _s110.normal_ + (1 - _fracX) * _s111.normal_;
+      Vec3f _x00 = _fracX * _s000.normal_ + (1 - _fracX) * _s001.normal_;
+      Vec3f _x01 = _fracX * _s010.normal_ + (1 - _fracX) * _s011.normal_;
+      Vec3f _x10 = _fracX * _s100.normal_ + (1 - _fracX) * _s101.normal_;
+      Vec3f _x11 = _fracX * _s110.normal_ + (1 - _fracX) * _s111.normal_;
 
-      float _y0 = _fracY * _x00 + (1 - _fracY) * _x01;
-      float _y1 = _fracY * _x10 + (1 - _fracY) * _x11;
+      Vec3f _y0 = _fracY * _x00 + (1 - _fracY) * _x01;
+      Vec3f _y1 = _fracY * _x10 + (1 - _fracY) * _x11;
       (*_gradient)  = _fracZ * _y0 + (1 - _fracZ) * _y1;
     }
   }
 
-  Point3f ImplicitSurface::project(const Point3f& _p, float* _f, Vec3f* _gradient)
+  Point3f ImplicitSurface::project(const Point3f& _p, float* _f, Vec3f* _gradient) const
   {
     float _orgF = 0.0; Vec3f _orgGradient;
     evaluate(_p,&_orgF,&_orgGradient);
 
     /// _q = projected point
-    Point3f _q = _p + _orgF * _orgGradient;
+    Point3f _q = _p + (-_orgF) * _orgGradient;
     evaluate(_q,_f,_gradient);
     return _q;
   }
 
 
-  void ImplicitSurface::calcBoundingBox()
-  {
-    LOG_MSG << "Calculating bounding box...";
-    PointCloud::calcBoundingBox();
-    Point3f _halfVoxelSize(boundingBox_.size().x()/32,
-        boundingBox_.size().y()/32,
-        boundingBox_.size().z()/32);
-
-    Point3f _mH(-_halfVoxelSize.x(),-_halfVoxelSize.y(),-_halfVoxelSize.z());
-
-    boundingBox_.min(boundingBox_.min() + _mH);
-    boundingBox_.max(boundingBox_.max() + _halfVoxelSize); 
-  }
-
   void Voxel::draw(const Color4f& _color) const
   {
-    float radius = length() * 0.5;
+    glBegin(GL_POINTS);
+    float radius = size() * 0.5;
     for (int i = 0; i < 8; i++)
     {
-      ImplicitSample& _sample = f_[i];
+      const ImplicitSample& _sample = f_[i];
 
       Color4f _c( _sample.f_ / radius , 1.0 - _sample.f_ / radius, 0.3);
       glColor4f(_c.r(),_c.g(),_c.b(),_c.a());
-      glVertex3f(voxel._.x(),voxel.center_.y(),voxel.center_.z());
+      glVertex3f(COORDS(_sample.point_));
     }
+    glEnd();
   }
 
   void ImplicitSurface::draw(const Color4f& _color) const
   {
-    glBegin(GL_POINTS);
-    BOOST_FOREACH( const Voxel& _voxel , voxels_ )
-      _voxels.draw(_color);
-    glEnd();
+    BOOST_FOREACH( const Voxel& _voxel , kdTree_.voxels_ )
+      _voxel.draw(_color);
   }
 
 
   void ImplicitSurface::drawGrid(const Color4f& _color) const
   {
     BoundingBox box;
-    BOOST_FOREACH ( const Voxel& _voxel, voxels_ )
+    BOOST_FOREACH ( const Voxel& _voxel, kdTree_.voxels_ )
     {
-      Vec3f c = voxel.center_.vec();
       box.min(_voxel.sample(0,0,0).point_);
       box.max(_voxel.sample(1,1,1).point_);
       box.draw(_color);
     }
   }
 
-  void ImplicitSurface::divideNode(KDNode<Vertex>* node, const BoundingBox& box, int depth)
-  {
-    assert(node);
-    LOG_MSG_(2) << fmt("Depth: %, objs: %") % depth % node->objs.size();
-
-    if (depth > 20 || node->objs.size() < 4)
-    {   // We have a leaf node!
-      node->left = NULL; node->right = NULL;
-      return;
-    }
-    node->left = new KDNode<Vertex>();
-    node->right = new KDNode<Vertex>();
-    node->axis = box.dominantAxis();
-
-    switch (node->axis)
-    {
-      case X: node->splitPos = median(node->objs,compareX)->v.x(); break;
-      case Y: node->splitPos = median(node->objs,compareY)->v.y(); break;
-      case Z: node->splitPos = median(node->objs,compareZ)->v.z(); break;
-      default: return;
-    }
-    BoundingBox boxLeft, boxRight;
-    box.split(node->splitPos,node->axis,boxLeft,boxRight);
-
-    BOOST_FOREACH( Vertex* vertex, node->objs )
-    {
-      KDNode<Vertex>* subNode = (vertex->v[node->axis] < node->splitPos) ? node->left : node->right;
-      subNode->objs.push_back(vertex);
-    }
-    node->objs.clear();
-    divideNode(node->left,boxLeft,depth+1);
-    divideNode(node->right,boxRight,depth+1);    
-  }
-
-
   Mesh ImplicitSurface::polygonize() const
   {
     LOG_MSG << "Polygonize...";
 
     Mesh _mesh;
-    BOOST_FOREACH ( const Voxel& _voxel, voxels_ )
+    BOOST_FOREACH ( const Voxel& _voxel, kdTree_.voxels_ )
       marchingCube(_voxel,_mesh);
 
     return _mesh;
   }
 
-  void ImplicitSurface::make(const PointCloud& _pointCloud)
+  void ImplicitSurface::make(PointCloud& _pointCloud)
   {
-    
+    LOG_MSG << "Calculating bounding box...";
+    Point3f _halfVoxelSize(_pointCloud.bounds().size().x()/32,
+                           _pointCloud.bounds().size().y()/32,
+                           _pointCloud.bounds().size().z()/32);
+
+    Point3f _mH(-_halfVoxelSize.x(),-_halfVoxelSize.y(),-_halfVoxelSize.z());
+
+    bounds_.min(bounds_.min() + _mH);
+    bounds_.max(bounds_.max() + _halfVoxelSize); 
+
+    epsilon_ = bounds_.size().length() / 100.0f;
+
+    BOOST_FOREACH ( Vertex& _vertex, _pointCloud.objs() )
+    {
+      _vertex.pos_ = epsilon_;
+      _vertex.neg_ =-epsilon_;
+    }
+
+    kdTree_.build(_pointCloud,bounds());
   }
 
 
 
   Vertex ImplicitSurface::sampleInterp(const ImplicitSample& _a, const ImplicitSample& _b) const
   { 
-    Point3f _p0 = _a->point_, _p1 = _b->point_; 
-    Vec3f  _n0 = _a->normal_, _n1 = _b->normal_;
+    Point3f _p0 = _a.point_, _p1 = _b.point_; 
+    Vec3f  _n0 = _a.normal_, _n1 = _b.normal_;
 
     // Function values of implicit surface
-    float _val0 = _a->f_, _val1 = _b->f_;
+    float _val0 = _a.f_, _val1 = _b.f_;
     // Interpolation value
     float mu = _val0 / ( _val0 - _val1 );
 
@@ -512,11 +477,8 @@ namespace cg2
     {0, 0, 1},{1, 0, 1},{1, 1, 1},{0, 1, 1}
   };
 
-  void ImplicitSurface::marchingCube(const Voxel& _voxel, Mesh& _mesh)
+  void ImplicitSurface::marchingCube(const Voxel& _voxel, Mesh& _mesh) const
   {
-    mesh_.triangles().clear();
-    mesh_.vertices_.clear();
-
     int idx1[12] = { 0,1,2,3,4,5,6,7,0,1,2,3 };
     int idx2[12] = { 1,2,3,0,5,6,7,4,4,5,6,7 };
 
@@ -532,7 +494,7 @@ namespace cg2
       const int *foo = &a2fVertexOffset[i][0];
       _samples[i] = _voxel.sample(foo[0], foo[1], foo[2]);
 
-      if (_samples[i]->f_ < 0) _cubeIndex |= (1 << i);
+      if (_samples[i].f_ < 0) _cubeIndex |= (1 << i);
     }
 
     for (int i = 0; i < 12; i++) 
@@ -545,20 +507,12 @@ namespace cg2
     {
       if (triTable[_cubeIndex][i] == -1) break;
 
-      size_t n = _mesh.vertices_.size();
-      _mesh.vertices_.push_back(_vertList[triTable[_cubeIndex][i  ]]);
-      _mesh.vertices_.push_back(_vertList[triTable[_cubeIndex][i+1]]);
-      _mesh.vertices_.push_back(_vertList[triTable[_cubeIndex][i+2]]);
-      /*
-         VertexTriangle _tri(
-         &_mesh.vertices_[n  ],
-         &_mesh.vertices_[n+1],
-         &_mesh.vertices_[n+2]);
-         */
-      _mesh.triangles().push_back(_tri);
+      // Vertex handles
+      Mesh::VertexHandle _vhA = _mesh.add_vertex( Point3f(_vertList[triTable[_cubeIndex][i  ]].v) );
+      Mesh::VertexHandle _vhB = _mesh.add_vertex( Point3f(_vertList[triTable[_cubeIndex][i+1]].v) );
+      Mesh::VertexHandle _vhC = _mesh.add_vertex( Point3f(_vertList[triTable[_cubeIndex][i+2]].v) );
+      _mesh.add_face(_vhA,_vhB,_vhC);
     }
   }
-
-}
 
 }
